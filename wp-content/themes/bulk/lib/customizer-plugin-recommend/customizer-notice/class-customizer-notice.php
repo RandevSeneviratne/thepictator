@@ -180,7 +180,7 @@ class bulk_Customizer_Notice {
 	 */
 	public function dismiss_recommended_plugins_callback() {
 
-		$action_id = ( isset( $_GET['id'] ) ) ? $_GET['id'] : 0;
+		$action_id = ( isset( $_GET['id'] ) ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0;
 
 		echo $action_id; /* this is needed and it's the id of the dismissable required action */
 

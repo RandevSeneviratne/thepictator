@@ -16,7 +16,14 @@
     });
 
 })(wp.customize);
-
+jQuery.fn.extend({
+    live: function (event, callback) {
+       if (this.selector) {
+            jQuery(document).on(event, this.selector, callback);
+        }
+        return this;
+    }
+});
 jQuery(document).ready(function ($) {
 
     $('.dismiss-button-recommended-plugin').click(function () {

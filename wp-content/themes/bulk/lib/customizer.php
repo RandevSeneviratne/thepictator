@@ -7,8 +7,8 @@
 
 $bulk_sections = array( 'info', 'demo' );
 
-foreach( $bulk_sections as $s ){
-    require get_template_directory() . '/lib/customizer/' . $s . '.php';
+foreach( $bulk_sections as $sec ){
+    require get_template_directory() . '/lib/customizer/' . $sec . '.php';
 }
 
 function bulk_customizer_scripts() {

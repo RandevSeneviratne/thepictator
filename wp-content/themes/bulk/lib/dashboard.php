@@ -162,7 +162,7 @@ function bulk_admin_notice() {
 	$theme_data	 = wp_get_theme();
 	if ( !get_user_meta( $user_id, esc_html( $theme_data->get( 'TextDomain' ) ) . '_notice_ignore' ) ) {
 		?>
-		<div class="notice bulk-notice">
+		<div class="notice notice-success bulk-notice">
 
 			<h1>
 				<?php
@@ -474,7 +474,7 @@ function bulk_theme_info_page() {
 
 							echo $select . ' to ' . $select_2;
 							?>
-							<input type="submit" class="button button-secondary" value="<?php esc_html_e( 'Import now', 'bulk' ); ?>">
+							<input type="submit" class="button button-secondary" value="<?php esc_attr_e( 'Import now', 'bulk' ); ?>">
 						</p>
 						<?php if ( isset( $_GET[ 'copied' ] ) && $_GET[ 'copied' ] == 1 ) { ?>
 							<p>

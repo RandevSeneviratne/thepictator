@@ -56,7 +56,7 @@ if ( !function_exists( 'bulk_setup' ) ) :
 		) );
 
 		add_theme_support( 'custom-header', apply_filters( 'bulk_setup_args', array(
-        'default-image'      => get_parent_theme_file_uri( '/img/header.jpg' ),
+                        'default-image'      => get_parent_theme_file_uri( '/img/header.jpg' ),
 			'width'              => 2000,
 			'height'             => 1200,
 			'flex-height'        => true,
@@ -113,7 +113,7 @@ function bulk_theme_stylesheets() {
 	wp_enqueue_style( 'bootstrap', get_template_directory_uri() . '/css/bootstrap.css', array(), '3.3.7' );
 	// Theme stylesheet.
 	wp_enqueue_style( 'bulk-stylesheet', get_stylesheet_uri() );
-  // load Font Awesome css
+        // load Font Awesome css
 	wp_enqueue_style( 'font-awesome', get_template_directory_uri() . '/css/font-awesome.min.css', array(), '4.7.0' );
 }
 
@@ -124,7 +124,7 @@ add_action( 'wp_enqueue_scripts', 'bulk_theme_stylesheets' );
  */
 function bulk_theme_js() {
 	wp_enqueue_script( 'bootstrap', get_template_directory_uri() . '/js/bootstrap.min.js', array( 'jquery' ), '3.3.7', true );
-	wp_enqueue_script( 'bulk-theme-js', get_template_directory_uri() . '/js/customscript.js', array( 'jquery' ), '1.0.8', true );
+	wp_enqueue_script( 'bulk-theme-js', get_template_directory_uri() . '/js/customscript.js', array( 'jquery' ), '1.0.10', true );
 }
 
 add_action( 'wp_enqueue_scripts', 'bulk_theme_js' );
@@ -149,6 +149,11 @@ require_once( trailingslashit( get_template_directory() ) . 'lib/dashboard.php' 
  * Register PRO notify
  */
 require_once( trailingslashit( get_template_directory() ) . 'lib/customizer.php' );
+
+/**
+ * Register new theme
+ */
+require_once( trailingslashit( get_template_directory() ) . 'lib/notice.php' );
 
 add_action( 'widgets_init', 'bulk_widgets_init' );
 
@@ -206,7 +211,7 @@ if ( !function_exists( 'bulk_posted_on' ) ) :
 		);
 
 		// Finally, let's write all of this to the page.
-		echo '<span class="posted-on">' . bulk_time_link() . '</span><span class="byline"> ' . $byline . '</span>';
+		echo '<span class="posted-on">' . bulk_time_link() . '</span><span class="byline"> ' . wp_kses_data( $byline ) . '</span>';
 	}
 
 endif;
@@ -261,11 +266,11 @@ if ( !function_exists( 'bulk_entry_footer' ) ) :
 
 					// Make sure there's more than one category before displaying.
 					if ( $categories_list ) {
-						echo '<div class="cat-links"><span class="space-right">' . esc_html__( 'Category:', 'bulk' ) . '</span>' . $categories_list . '</div>';
+						echo '<div class="cat-links"><span class="space-right">' . esc_html__( 'Category:', 'bulk' ) . '</span>' . wp_kses_data( $categories_list ) . '</div>';
 					}
 
 					if ( $tags_list ) {
-						echo '<div class="tags-links"><span class="space-right">' . esc_html__( 'Tagged', 'bulk' ) . '</span>' . $tags_list . '</div>';
+						echo '<div class="tags-links"><span class="space-right">' . esc_html__( 'Tagged', 'bulk' ) . '</span>' . wp_kses_data( $tags_list ) . '</div>';
 					}
 				}
 			}
@@ -299,7 +304,7 @@ if ( !function_exists( 'bulk_generate_construct_footer' ) ) :
 			<span class="sep"> | </span>
 			<?php 
 			/* translators: %1$s: link to theme page */
-			printf( esc_html__( 'Theme: %1$s', 'bulk' ), '<a href="https://themes4wp.com/">Bulk</a>' );
+			printf( esc_html__( 'Theme: %1$s', 'bulk' ), '<a href="'. esc_url( 'https://themes4wp.com/' ) . '">Bulk</a>' );
 			?>
 		</p> 
 		<?php
@@ -369,4 +374,20 @@ if ( !function_exists( 'bulk_custom_head_color' ) ) :
 		}
 	}
 
+endif;
+
+if ( ! function_exists( 'wp_body_open' ) ) :
+    /**
+     * Fire the wp_body_open action.
+     *
+     * Added for backwards compatibility to support pre 5.2.0 WordPress versions.
+     *
+     */
+    function wp_body_open() {
+        /**
+         * Triggered after the opening <body> tag.
+         *
+         */
+        do_action( 'wp_body_open' );
+    }
 endif;

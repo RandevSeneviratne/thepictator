@@ -2,8 +2,9 @@
 Contributors: Themes4WP
 Tags: one-column, two-columns, right-sidebar, custom-background, custom-menu, featured-images, theme-options, translation-ready
 Requires at least: 4.4
-Tested up to: 4.9
-Version: 1.0.7
+Tested up to: 5.5
+Requires PHP: 5.2.4
+Stable tag: 1.0.11
 License: GNU General Public License v3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,8 +40,8 @@ GNU General Public License for more details.
 
 == RESOURCES ==
 
-* Image in the screenshot is from http://pixabay.com/:
-  - https://pixabay.com/en/landscape-yacht-sunrise-clouds-1802340/ | License: CC0 Public Domain
+* Image in the screenshot is from https://stocksnap.io/:
+  - https://stocksnap.io/photo/people-man-0780GFR4L8 | by Arnaud Mesureur | License: CC0 Public Domain
 * WordPress nav walker - https://github.com/twittem/wp-bootstrap-navwalker | GPL 2.0
 * Twitter Bootstrap Framework - http://getbootstrap.com | MIT License
 * Font Awesome by Dave Gandy http://fortawesome.github.io/Font-Awesome/ | License: SIL OFL 1.1 & MIT
@@ -51,6 +52,21 @@ All other resources and theme elements are licensed under the [GNU GPL](http://w
 Bulk is distributed under the terms of the GNU GPL (http://www.gnu.org/licenses/gpl-3.0.txt), version 3 or later.
 
 == Changelog ==
+
+= Version 1.0.11 =
+* Fixed script issue
+* Changed screenshot
+* Tested with WP 5.5
+
+= Version 1.0.10 =
+* Code improvements based on WP requirements
+
+= Version 1.0.9 =
+* Added wp_body_open
+* Updated code
+
+= Version 1.0.8 =
+* Screenshot update
 
 = Version 1.0.7 =
 * Better footer widget area style
