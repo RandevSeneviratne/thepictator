@@ -13,6 +13,7 @@ use Elementor\Group_Control_Text_Shadow;
 use Elementor\Group_Control_Box_Shadow;
 use Elementor\Group_Control_Border;
 use Elementor\Icons_Manager;
+use WTS_EAE\Classes\Helper;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -25,11 +26,11 @@ class ModalPopup extends EAE_Widget_Base {
 	}
 
 	public function get_title() {
-		return __( 'EAE - Modal Popup', 'wts-eae' );
+		return __( 'Modal Popup', 'wts-eae' );
 	}
 
 	public function get_icon() {
-		return 'eae-icons eae-popup';
+		return 'eae-icon eae-modal-popup';
 	}
 
 	public function get_categories() {
@@ -40,11 +41,26 @@ class ModalPopup extends EAE_Widget_Base {
 		$options = [
 			'content'      => __( 'Content', 'wts-eae' ),
 			'savedsection' => __( 'Saved Section', 'wts-eae' ),
+			'savedcontainer' => __('Saved Container','wts-eae'),
 			'savedpage'    => __( 'Saved Page', 'wts-eae' ),
 			'aetemplate'   => __( 'AE Template', 'wts-eae' ),
 		];
 
 		return $options;
+	}
+
+	protected function get_effect_options () {
+		$effects  = [
+			''					=>  __('Default', 'wts-eae'),
+			'zoom-in'			=>	__('Zoom In', 'wts-eae'),
+			'move-horizontal'	=>	__('Move Horizontal In', 'wts-eae'),
+			'newspaper'			=>	__('Newspaper', 'wts-eae'),
+			'move-from-top'		=>	__('Move From Top', 'wts-eae'),
+			'3d-unfold'			=>	__('3d-Unfold', 'wts-eae'),
+			'zoom-out'			=>	__('Zoom Out', 'wts-eae')
+		]; 
+
+		return $effects;
 	}
 
 	protected function register_controls() {
@@ -115,6 +131,20 @@ class ModalPopup extends EAE_Widget_Base {
 				'condition' => [
 					'content_type' => 'savedsection',
 				],
+			]
+		);
+
+		$saved_container[''] = __('Select Container','wts-eae');
+		$saved_container     = $saved_container + $this->select_elementor_page( 'container' );
+		$this->add_control(
+			'saved_container',
+			[
+				'label' => esc_html__('Container','wts-eae'),
+				'type' => Controls_Manager::SELECT,
+				'options' => $saved_container,
+				'condition' => [
+					'content_type' => 'savedcontainer'
+				]
 			]
 		);
 
@@ -198,20 +228,14 @@ class ModalPopup extends EAE_Widget_Base {
 			]
 		);
 
+		$effects = $this->get_effect_options();
+
 		$this->add_control(
 			'effect',
 			[
 				'label'		=>	__('Effect', 'wts-eae'),
 				'type'		=>	Controls_Manager::SELECT,
-				'options'	=>	[
-					''					=>  __('Default', 'wts-eae'),
-					'zoom-in'			=>	__('Zoom In', 'wts-eae'),
-					'move-horizontal'	=>	__('Move Horizontal In', 'wts-eae'),
-					'newspaper'			=>	__('Newspaper', 'wts-eae'),
-					'move-from-top'		=>	__('Move From Top', 'wts-eae'),
-					'3d-unfold'			=>	__('3d-Unfold', 'wts-eae'),
-					'zoom-out'			=>	__('Zoom Out', 'wts-eae')
-				],
+				'options'	=>	$effects,
 				'default'	=>	''
 			]
 		);
@@ -1030,7 +1054,7 @@ class ModalPopup extends EAE_Widget_Base {
 		$icon_is_new             = empty( $settings['button_icon'] );
 		$close_btn_icon_migrated = isset( $settings['__fa4_migrated']['close_btn_icon_new'] );
 		$close_btn_icon_is_new   = empty( $settings['close_btn_icon'] );
-		$effect = $settings['effect'];
+		$effect = Helper::validate_option_value($settings['effect'], $this->get_effect_options(), '');
 		$close_button_type = isset( $settings['close_btn_icon_new']['value']['url'] ) ? 'svg' : 'icon';
 		if ( $close_button_type === 'svg' ) {
 			$close_button = $settings['close_btn_icon_new']['value']['url'];
@@ -1137,7 +1161,18 @@ class ModalPopup extends EAE_Widget_Base {
 						<?php echo EPlugin::instance()->frontend->get_builder_content_for_display( $settings['saved_ae_template'] ); ?>
 					</div>
 					<?php
-				} else {
+				} elseif ( $settings['content_type'] === 'savedcontainer' ) {
+					if ( $settings['modal_title'] !== '' ) {
+						?>
+						<div class="eae-modal-title mfp-title">
+							<?php echo $settings['modal_title']; ?>
+						</div>
+					<?php } ?>
+					<div class="eae-modal-content">
+						<?php echo EPlugin::instance()->frontend->get_builder_content_for_display( $settings['saved_container'] ); ?>
+					</div>
+					<?php
+				}else {
 					echo $settings['content_type'];
 				}
 				?>

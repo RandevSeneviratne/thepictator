@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name: WP Activity Log for Gravity Forms
- * Plugin URI: https://wpactivitylog.com/extensions/
+ * Plugin URI: https://melapress.com/wordpress-activity-log/
  * Description: A WP Activity Log plugin extension for Gravity Forms.
  * Text Domain: wsal-gravity-forms
- * Author: WP White Security
- * Author URI: http://www.wpwhitesecurity.com/
- * Version: 1.2.1
+ * Author: Melapress
+ * Author URI: http://melapress.com/
+ * Version: 1.2.3
  * License: GPL2
  * Network: true
  *
@@ -14,8 +14,10 @@
  * @subpackage wsal-gravity-forms
  */
 
+use WSAL\Helpers\Classes_Helper;
+
 /*
-	Copyright(c) 2022  WP White Security  (email : info@wpwhitesecurity.com)
+	Copyright(c) 2023  WP White Security  (email : info@wpwhitesecurity.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License, version 2, as
@@ -44,3 +46,24 @@ if ( ! defined( 'WSAL_CLASS_PREFIX' ) ) {
 
 // Include extension specific functions.
 require_once plugin_dir_path( __FILE__ ) . 'includes/wsal-functions.php';
+
+add_action(
+	'wsal_custom_alerts_register',
+	/**
+	* Adds sensors classes to the Class Helper
+	*
+	* @return void
+	*
+	* @since latest
+	*/
+	function () {
+		require_once __DIR__ . '/wp-security-audit-log/class-gravity-forms-custom-alerts.php';
+
+		Classes_Helper::add_to_class_map(
+			array(
+				'WSAL\\Custom_Alerts\\Gravity_Forms_Custom_Alerts' => __DIR__ . '/wp-security-audit-log/class-gravity-forms-custom-alerts.php',
+			)
+		);
+	}
+);
+

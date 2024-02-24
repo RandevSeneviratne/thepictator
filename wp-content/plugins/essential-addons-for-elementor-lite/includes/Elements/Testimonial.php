@@ -103,6 +103,9 @@ class Testimonial extends Widget_Base {
 				'condition' => [
 					'eael_testimonial_enable_avatar' => 'yes',
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -135,7 +138,10 @@ class Testimonial extends Widget_Base {
 				'label' => esc_html__( 'User Name', 'essential-addons-for-elementor-lite'),
 				'type' => Controls_Manager::TEXT,
 				'default' => esc_html__( 'John Doe', 'essential-addons-for-elementor-lite'),
-				'dynamic' => [ 'active' => true ]
+				'dynamic' => [ 'active' => true ],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -145,7 +151,10 @@ class Testimonial extends Widget_Base {
 				'label' => esc_html__( 'Company Name', 'essential-addons-for-elementor-lite'),
 				'type' => Controls_Manager::TEXT,
 				'default' => esc_html__( 'Codetic', 'essential-addons-for-elementor-lite'),
-				'dynamic' => [ 'active' => true ]
+				'dynamic' => [ 'active' => true ],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -265,17 +274,17 @@ class Testimonial extends Widget_Base {
     $this->add_control(
       'eael_testimonial_is_gradient_background',
       [
-          'label' => __('Use Gradient Background', 'essential-addons-elementor'),
+          'label' => __('Use Gradient Background', 'essential-addons-for-elementor-lite'),
           'type' => Controls_Manager::SWITCHER,
-          'label_on' => __('Show', 'essential-addons-elementor'),
-          'label_off' => __('Hide', 'essential-addons-elementor'),
+          'label_on' => __('Show', 'essential-addons-for-elementor-lite'),
+          'label_off' => __('Hide', 'essential-addons-for-elementor-lite'),
           'return_value' => 'yes',
       ]
     );
     $this->add_control(
         'eael_testimonial_background',
         [
-            'label' => esc_html__('Background Color', 'essential-addons-elementor'),
+            'label' => esc_html__('Background Color', 'essential-addons-for-elementor-lite'),
             'type' => Controls_Manager::COLOR,
             'default' => '',
             'selectors' => [
@@ -290,7 +299,7 @@ class Testimonial extends Widget_Base {
         \Elementor\Group_Control_Background::get_type(),
         [
             'name' => 'eael_testimonial_gradient_background',
-            'label' => __('Gradient Background', 'essential-addons-elementor'),
+            'label' => __('Gradient Background', 'essential-addons-for-elementor-lite'),
             'types' => ['classic', 'gradient'],
             'selector' => '{{WRAPPER}} .eael-testimonial-item',
             'condition' => [
@@ -601,6 +610,34 @@ class Testimonial extends Widget_Base {
 				'label' => __( 'Rating', 'essential-addons-for-elementor-lite'),
 				'type' => Controls_Manager::HEADING,
 				'separator'	=> 'before'
+			]
+		);
+
+		$this->add_control(
+			'eael_testimonial_rating_item_color',
+			[
+				'label'     => esc_html__( 'Rating Color', 'essential-addons-for-elementor-lite'),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '#f2b01e',
+				'selectors' => [
+					'{{WRAPPER}} .rating-five .testimonial-star-rating li i' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .rating-one .testimonial-star-rating li:first-child i' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .rating-two .testimonial-star-rating li:nth-child(1) i, {{WRAPPER}} .rating-two .testimonial-star-rating li:nth-child(2) i' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .rating-three .testimonial-star-rating li:nth-child(1) i, {{WRAPPER}} .rating-three .testimonial-star-rating li:nth-child(2) i, {{WRAPPER}} .rating-three .testimonial-star-rating li:nth-child(3) i' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .rating-four .testimonial-star-rating li:nth-child(1) i, {{WRAPPER}} .rating-four .testimonial-star-rating li:nth-child(2) i, {{WRAPPER}} .rating-four .testimonial-star-rating li:nth-child(3) i, {{WRAPPER}} .rating-four .testimonial-star-rating li:nth-child(4) i' => 'color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'eael_testimonial_rating_item_size',
+			[
+				'label'      => esc_html__( 'Rating Size', 'essential-addons-for-elementor-lite'),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%' ],
+				'selectors'  => [
+					'{{WRAPPER}} .eael-testimonial-content .testimonial-star-rating li i' => 'font-size: {{SIZE}}{{UNIT}};',
+				],
 			]
 		);
 

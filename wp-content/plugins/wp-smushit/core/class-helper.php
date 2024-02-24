@@ -13,6 +13,9 @@
 namespace Smush\Core;
 
 use finfo;
+use Smush\Core\Media\Media_Item_Cache;
+use Smush\Core\Media\Media_Item_Stats;
+use Smush\Core\Png2Jpg\Png2Jpg_Optimization;
 use WP_Smush;
 use WDEV_Logger;
 
@@ -59,11 +62,21 @@ class Helper {
 	 */
 	public static function logger() {
 		if ( null === self::$logger ) {
+			$swiched_blog = false;
+			// On MU site, move all log files into the log folder [wp-content/uploads/smush] on the main site.
+			if ( is_multisite() && ! is_main_site() ) {
+				switch_to_blog( get_main_site_id() );
+				$swiched_blog = true;
+			}
 			$upload_dir = wp_get_upload_dir();
 
 			$log_dir = 'smush';
 			if ( false !== strpos( $upload_dir['basedir'], WP_CONTENT_DIR ) ) {
 				$log_dir = str_replace( trailingslashit( WP_CONTENT_DIR ), '', $upload_dir['basedir'] ) . '/smush';
+			}
+
+			if ( $swiched_blog ) {
+				restore_current_blog();
 			}
 
 			self::$logger = WDEV_Logger::create(
@@ -269,33 +282,13 @@ class Helper {
 	 * @return array
 	 */
 	public static function get_pngjpg_savings( $attachment_id = '' ) {
-		// Initialize empty array.
-		$savings = array(
-			'bytes'       => 0,
-			'size_before' => 0,
-			'size_after'  => 0,
-		);
+		$media_item           = Media_Item_Cache::get_instance()->get( $attachment_id );
+		$png2jpg_optimization = new Png2Jpg_Optimization( $media_item );
+		$stats                = $png2jpg_optimization->is_optimized()
+			? $png2jpg_optimization->get_stats() :
+			new Media_Item_Stats();
 
-		// Return empty array if attachment id not provided.
-		if ( empty( $attachment_id ) ) {
-			return $savings;
-		}
-
-		$pngjpg_savings = get_post_meta( $attachment_id, 'wp-smush-pngjpg_savings', true );
-		if ( empty( $pngjpg_savings ) || ! is_array( $pngjpg_savings ) ) {
-			return $savings;
-		}
-
-		foreach ( $pngjpg_savings as $s_savings ) {
-			if ( empty( $s_savings ) ) {
-				continue;
-			}
-			$savings['size_before'] += $s_savings['size_before'];
-			$savings['size_after']  += $s_savings['size_after'];
-		}
-		$savings['bytes'] = $savings['size_before'] - $savings['size_after'];
-
-		return $savings;
+		return $stats->to_array();
 	}
 
 	/**
@@ -386,7 +379,7 @@ class Helper {
 		if ( is_array( $meta ) ) {
 
 			// Walk through each items and format.
-			array_walk_recursive( $meta, array( 'self', 'format_attachment_meta_item' ) );
+			array_walk_recursive( $meta, array( self::class, 'format_attachment_meta_item' ) );
 		}
 
 		return $meta;
@@ -429,33 +422,12 @@ class Helper {
 	 * @return bool|int
 	 */
 	public static function check_animated_status( $file_path, $id, $mime_type = false ) {
-		// Only do this for GIFs.
-		$mime_type = $mime_type ? $mime_type : get_post_mime_type( $id );
-		if ( 'image/gif' !== $mime_type || ! isset( $file_path ) ) {
-			return false;
-		}
+		$media_item = Media_Item_Cache::get_instance()->get( $id );
 
-		// Try to check from saved meta.
-		$is_animated = get_post_meta( $id, 'wp-smush-animated', true );
-		if ( $is_animated ) {
-			/**
-			 * Support old version.
-			 *
-			 * @since 3.9.10
-			 */
-			update_post_meta( $id, 'wp-smush-ignore-bulk', Core::STATUS_ANIMATED );
-			// Clean the old metadata.
-			delete_post_meta( $id, 'wp-smush-animated' );
-			return true;
-		}
+		return $media_item->is_animated();
+	}
 
-		$enabled_backup = WP_Smush::get_instance()->core()->mod->backup->is_active();
-		// If enabling backup, it's safe for us to check exists result from the meta value.
-		if ( $enabled_backup && '0' === $is_animated ) {
-			// If it's not an animated image, returns.
-			return false;
-		}
-
+	public static function check_animated_file_contents( $file_path ) {
 		$filecontents = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 
 		$str_loc = 0;
@@ -473,28 +445,39 @@ class Helper {
 					break;
 				} else {
 					if ( $where2 === $where1 + 8 ) {
-						$count++;
+						$count ++;
 					}
 					$str_loc = $where2 + 1;
 				}
 			}
 		}
 
-		$is_animated = 0;
-		if ( $count > 1 ) {
-			$is_animated = 1;
-			/**
-			 * Set it as an ignored image to exclude from unsmushed list.
-			 *
-			 * @since 3.9.10
-			 */
-			update_post_meta( $id, 'wp-smush-ignore-bulk', Core::STATUS_ANIMATED );
-		} elseif ( $enabled_backup ) {
-			// Cache the result if user enabled the backup mode.
-			update_post_meta( $id, 'wp-smush-animated', $is_animated );
+		return $count > 1;
+	}
+
+	/**
+	 * Verify the file size limit.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 *
+	 * Note: We only use this method to verify an image before smushing it,
+	 * we still need to verify the file size of every thumbnail files while smushing them.
+	 *
+	 * @return bool|int Return the file size if the size limit is exceeded, otherwise return FALSE.
+	 */
+	public static function size_limit_exceeded( $attachment_id ) {
+		$original_file_path = self::get_attached_file( $attachment_id, 'original' );
+		if ( ! file_exists( $original_file_path ) ) {
+			$original_file_path = self::get_attached_file( $attachment_id );
 		}
 
-		return $is_animated;
+		if ( ! file_exists( $original_file_path ) ) {
+			return false;
+		}
+		$max_file_size = WP_Smush::is_pro() ? WP_SMUSH_PREMIUM_MAX_BYTES : WP_SMUSH_MAX_BYTES;
+		$file_size     = filesize( $original_file_path );
+
+		return $file_size > $max_file_size ? $file_size : false;
 	}
 
 	/**
@@ -555,6 +538,21 @@ class Helper {
 	}
 
 	/**
+	 * Get Smush page URL.
+	 *
+	 * @param string $page Page URL.
+	 *
+	 * @return string
+	 */
+	public static function get_page_url( $page = 'smush-bulk' ) {
+		if ( is_multisite() && is_network_admin() ) {
+			return network_admin_url( 'admin.php?page=' . $page );
+		}
+
+		return admin_url( 'admin.php?page=' . $page );
+	}
+
+	/**
 	 * Get the extension of a file.
 	 *
 	 * @param string $file File path or file name.
@@ -592,6 +590,21 @@ class Helper {
 			}
 		}
 		return $is_not_rest_media;
+	}
+
+	/**
+	 * Checks if user is allowed to perform the ajax actions.
+	 * As previous we allowed for logged in user, so add a hook filter to allow
+	 * user can custom the capability. It might also helpful when user custom admin menu via Branda.
+	 *
+	 * @since 3.13.0
+	 *
+	 * @param string $capability Capability default is manage_options.
+	 * @return boolean
+	 */
+	public static function is_user_allowed( $capability = 'manage_options' ) {
+		$capability = empty( $capability ) ? 'manage_options' : $capability;
+		return current_user_can( apply_filters( 'wp_smush_admin_cap', $capability ) );
 	}
 
 	/*------ S3 Compatible Methods ------*/
@@ -875,4 +888,82 @@ class Helper {
 
 	/*------ End S3 Compatible Methods ------*/
 
+	public static function get_image_sizes() {
+		// Get from cache if available to avoid duplicate looping.
+		$sizes = wp_cache_get( 'get_image_sizes', 'smush_image_sizes' );
+		if ( $sizes ) {
+			return $sizes;
+		}
+
+		return self::fetch_image_sizes();
+	}
+
+	public static function fetch_image_sizes() {
+		global $_wp_additional_image_sizes;
+		$additional_sizes = get_intermediate_image_sizes();
+		$sizes            = array();
+
+		if ( empty( $additional_sizes ) ) {
+			return $sizes;
+		}
+
+		// Create the full array with sizes and crop info.
+		foreach ( $additional_sizes as $_size ) {
+			if ( in_array( $_size, array( 'thumbnail', 'medium', 'large' ), true ) ) {
+				$sizes[ $_size ]['width']  = get_option( $_size . '_size_w' );
+				$sizes[ $_size ]['height'] = get_option( $_size . '_size_h' );
+				$sizes[ $_size ]['crop']   = (bool) get_option( $_size . '_crop' );
+			} elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
+				$sizes[ $_size ] = array(
+					'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
+					'height' => $_wp_additional_image_sizes[ $_size ]['height'],
+					'crop'   => $_wp_additional_image_sizes[ $_size ]['crop'],
+				);
+			}
+		}
+
+		// Medium Large.
+		if ( ! isset( $sizes['medium_large'] ) || empty( $sizes['medium_large'] ) ) {
+			$width  = (int) get_option( 'medium_large_size_w' );
+			$height = (int) get_option( 'medium_large_size_h' );
+
+			$sizes['medium_large'] = array(
+				'width'  => $width,
+				'height' => $height,
+			);
+		}
+
+		// Set cache to avoid this loop next time.
+		wp_cache_set( 'get_image_sizes', $sizes, 'smush_image_sizes' );
+
+		return $sizes;
+	}
+
+	public static function loopback_supported() {
+		$method_available = class_exists( '\WP_Site_Health' )
+		                    && method_exists( '\WP_Site_Health', 'get_instance' )
+		                    && method_exists( \WP_Site_Health::get_instance(), 'can_perform_loopback' );
+
+		if ( $method_available ) {
+			$loopback = \WP_Site_Health::get_instance()->can_perform_loopback();
+
+			return $loopback->status === 'good';
+		}
+
+		return true;
+	}
+
+	public static function get_recheck_images_link() {
+		if ( is_network_admin() ) {
+			// Users can't run re-check images on the network admin side at the moment, @see: SMUSH-369.
+			return '';
+		}
+
+		$recheck_images_link = add_query_arg(
+			array( 'smush-action' => 'start-scan-media' ),
+			self::get_page_url( 'smush-bulk' )
+		);
+
+		return $recheck_images_link;
+	}
 }

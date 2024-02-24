@@ -176,6 +176,11 @@ class NextGen extends Abstract_Integration {
 
 		check_ajax_referer( 'wp-smush-ajax', '_nonce' );
 
+		// Check For permission.
+		if ( ! Helper::is_user_allowed( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Unauthorized', 'wp-smushit' ), 403 );
+		}
+
 		if ( empty( $_GET['attachment_id'] ) ) {
 			wp_send_json_error(
 				array(
@@ -214,7 +219,7 @@ class NextGen extends Abstract_Integration {
 
 		// Check if a re-Smush request, update the re-Smush list.
 		if ( ! empty( $_REQUEST['is_bulk_resmush'] ) ) {
-			WP_Smush::get_instance()->core()->mod->smush->update_resmush_list( $atchmnt_id, 'wp-smush-nextgen-resmush-list' );
+			$this->ng_stats->get_reoptimize_list()->remove_id( $atchmnt_id );
 		}
 		$stats['is_lossy'] = ! empty( $smush['stats'] ) ? $smush['stats']['lossy'] : 0;
 
@@ -223,11 +228,7 @@ class NextGen extends Abstract_Integration {
 		$stats['size_after']  = ! empty( $smush['stats'] ) ? $smush['stats']['size_after'] : 0;
 
 		// Get the re-Smush IDs list.
-		if ( empty( $this->ng_admin->resmush_ids ) ) {
-			$this->ng_admin->resmush_ids = get_option( 'wp-smush-nextgen-resmush-list' );
-		}
-
-		$this->ng_admin->resmush_ids = empty( $this->ng_admin->resmush_ids ) ? get_option( 'wp-smush-nextgen-resmush-list' ) : array();
+		$this->ng_admin->resmush_ids = $this->ng_stats->get_reoptimize_list()->get_ids();
 		$resmush_count               = ! empty( $this->ng_admin->resmush_ids ) ? count( $this->ng_admin->resmush_ids ) : 0;
 		$smushed_images              = $this->ng_stats->get_ngg_images( 'smushed' );
 
@@ -373,7 +374,7 @@ class NextGen extends Abstract_Integration {
 
 		$status = '';
 		if ( ! is_wp_error( $smush ) ) {
-			$status = $this->ng_stats->show_stats( $pid, $smush );
+			$status = $this->ng_admin->show_stats( $pid, $smush );
 		}
 
 		if ( ! $is_bulk ) {
@@ -413,7 +414,7 @@ class NextGen extends Abstract_Integration {
 		}
 
 		// Check for media upload permission.
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! Helper::is_user_allowed( 'upload_files' ) ) {
 			wp_send_json_error(
 				array(
 					'error_msg' => __( "You don't have permission to work with uploaded files.", 'wp-smushit' ),
@@ -545,7 +546,7 @@ class NextGen extends Abstract_Integration {
 		}
 
 		// Check permissions.
-		if ( ! current_user_can( 'NextGEN Manage gallery' ) ) {
+		if ( ! Helper::is_user_allowed( 'NextGEN Manage gallery' ) ) {
 			wp_send_json_error(
 				array(
 					'error'     => 'unauthorized',
@@ -663,6 +664,16 @@ class NextGen extends Abstract_Integration {
 			wp_send_json_error(
 				array(
 					'error_msg' => '<div class="wp-smush-error">' . esc_html__( "Image couldn't be smushed as the nonce verification failed, try reloading the page.", 'wp-smushit' ) . '</div>',
+				)
+			);
+		}
+
+		// Check permissions.
+		if ( ! Helper::is_user_allowed( 'NextGEN Manage gallery' ) ) {
+			wp_send_json_error(
+				array(
+					'error'     => 'unauthorized',
+					'error_msg' => '<div class="wp-smush-error">' . esc_html__( "You don't have permission to do this.", 'wp-smushit' ) . '</div>',
 				)
 			);
 		}
@@ -800,11 +811,6 @@ class NextGen extends Abstract_Integration {
 					continue;
 				}
 
-				// Check if registered size is supposed to be converted or not.
-				if ( 'full' !== $size && $smush->skip_image_size( $size ) ) {
-					return false;
-				}
-
 				// We take the original image. Get the absolute path using the storage object.
 				$attachment_file_path_size = $storage->get_image_abspath( $image, $size );
 
@@ -902,7 +908,7 @@ class NextGen extends Abstract_Integration {
 			$stats['total_images'] = ! empty( $stats['sizes'] ) ? count( $stats['sizes'] ) : 0;
 
 			// If there was any compression and there was no error in smushing.
-			if ( isset( $stats['stats']['bytes'] ) && $stats['stats']['bytes'] >= 0 && ! $has_errors ) {
+			if ( ! $has_errors ) {
 				/**
 				 * Runs if the image smushing was successful
 				 *

@@ -41,9 +41,15 @@ class Image_Presenter extends Abstract_Indexable_Presenter {
 		}
 
 		$return = '';
-		foreach ( $images as $image_index => $image_meta ) {
+		foreach ( $images as $image_meta ) {
 			$image_url = $image_meta['url'];
-			$class     = \is_admin_bar_showing() ? ' class="yoast-seo-meta-tag"' : '';
+
+			if ( \is_attachment() ) {
+				global $wp;
+				$image_url = \home_url( $wp->request );
+			}
+
+			$class = \is_admin_bar_showing() ? ' class="yoast-seo-meta-tag"' : '';
 
 			$return .= '<meta property="og:image" content="' . \esc_url( $image_url, null, 'attribute' ) . '"' . $class . ' />';
 
@@ -90,8 +96,7 @@ class Image_Presenter extends Abstract_Indexable_Presenter {
 		/**
 		 * Filter: 'wpseo_opengraph_image' - Allow changing the Open Graph image.
 		 *
-		 * @api string - The URL of the Open Graph image.
-		 *
+		 * @param string                 $image_url    The URL of the Open Graph image.
 		 * @param Indexable_Presentation $presentation The presentation of an indexable.
 		 */
 		$image_url = \trim( \apply_filters( 'wpseo_opengraph_image', $image['url'], $this->presentation ) );

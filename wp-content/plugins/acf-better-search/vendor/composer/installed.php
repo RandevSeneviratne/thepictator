@@ -1,22 +1,22 @@
 <?php return array(
     'root' => array(
+        'name' => 'gbiorczyk/acf-better-search',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
+        'reference' => 'e5e775bd943e4e16ae6aca308625194551f127e0',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '2f622c7730b34ad3c47fb04b2f6305c1bf6bf1ea',
-        'name' => 'gbiorczyk/acf-better-search',
         'dev' => false,
     ),
     'versions' => array(
         'gbiorczyk/acf-better-search' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
+            'reference' => 'e5e775bd943e4e16ae6aca308625194551f127e0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '2f622c7730b34ad3c47fb04b2f6305c1bf6bf1ea',
             'dev_requirement' => false,
         ),
     ),

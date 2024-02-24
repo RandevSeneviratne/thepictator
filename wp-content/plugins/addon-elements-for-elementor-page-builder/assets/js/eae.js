@@ -2,8 +2,13 @@ jQuery(window).on("elementor/frontend/init", function () {
   elementorFrontend.hooks.addAction(
     "frontend/element_ready/wts-gmap.default",
     function ($scope) {
+      var $wrapper = $scope.find(".eae-markers");
+      if($wrapper.length == 0){
+        return;
+      }
+      
       map = new_map($scope.find(".eae-markers"));
-
+      
       function new_map($el) {
         $wrapper = $scope.find(".eae-markers");
         var zoom = $wrapper.data("zoom");
@@ -39,7 +44,6 @@ jQuery(window).on("elementor/frontend/init", function () {
       function add_marker($marker, map) {
         var animate = $wrapper.data("animate");
         var info_window_onload = $wrapper.data("show-info-window-onload");
-        //console.log(info_window_onload);
         $wrapper = $scope.find(".eae-markers");
         //alert($marker.attr('data-lat') + ' - '+ $marker.attr('data-lng'));
         var latlng = new google.maps.LatLng(
@@ -202,8 +206,8 @@ jQuery(window).on("elementor/frontend/init", function () {
 });
 
 var isEditMode = false;
-var breakpoints = eae.breakpoints;
-//console.log('eae-breakpoints', breakpoints);
+// var breakpoints = eae.breakpoints;
+var popupInstance = [];
 (function ($) {
   $(window).on("elementor/frontend/init", function () {
     var ab_image = function ($scope, $) {
@@ -471,6 +475,7 @@ var breakpoints = eae.breakpoints;
       }
     };
 
+
     var ParticlesBG = function ($scope, $) {
       if ($scope.hasClass("eae-particle-yes")) {
         id = $scope.data("id");
@@ -526,87 +531,6 @@ var breakpoints = eae.breakpoints;
       }
     };
 
-    // var ParticlesBG = function ($scope, $) {
-
-    //     if ($scope.hasClass('eae-particle-yes')) {
-    //         const wId  = $scope.data('id');
-    //         const wrapper = document.querySelector('.elementor-element-'+wId);
-    //         //outerWrapper = wrapper.querySelector('.fv-dp-outer-wrapper');
-    //         id = $scope.data('id');
-
-    //         element_type = wrapper.getAttribute('data-element_type');
-    //         is_edit_mode = wrapper.classList.contains('elementor-element-edit-mode');
-    //         console.log(is_edit_mode);
-    //         pdata = wrapper.getAttribute('data-eae-particle');
-    //         if(is_edit_mode){
-    //             pdata_wrapper = wrapper.querySelector('.eae-particle-wrapper').getAttribute('data-eae-pdata');
-    //             pdata_wrapper = JSON.parse(pdata_wrapper);
-    //         }
-
-    //         if (typeof pdata != 'undefined' && pdata != null) {
-    //             var bsElement = wrapper.querySelector('.eae-section-bs');
-    //             if (bsElement) {
-    //                 console.log("BS Inner");
-    //                 var particleDiv = document.createElement("div");
-    //                 particleDiv.setAttribute('class' , 'eae-particle-wrapper');
-    //                 particleDiv.setAttribute('id' , "eae-particle-" + id);
-    //                 var bsElement = wrapper.querySelector('.eae-section-bs');
-    //                 bsElement.after(particleDiv);
-    //                 tsParticles.load("eae-particle-" + id, JSON.parse(pdata));
-    //             } else {
-    //                 if (element_type == 'column') {
-    //                     var particleDiv = document.createElement("div");
-    //                     particleDiv.setAttribute('class' , 'eae-particle-wrapper');
-    //                     particleDiv.setAttribute('id' , "eae-particle-" + id);
-    //                     wrapper.prepend(particleDiv);
-    //                 } else {
-    //                     var particleDiv = document.createElement("div");
-    //                     particleDiv.setAttribute('class' , 'eae-particle-wrapper');
-    //                     particleDiv.setAttribute('id' , "eae-particle-" + id);
-    //                     wrapper.prepend(particleDiv);
-    //                 }
-    //                 //console.log(tsParticles.load('particles' , {}));
-    //                 // pdata = JSON.parse(pdata);
-    //                 tsParticles.load("eae-particle-" + id, JSON.parse(pdata));
-    //                 //particlesJS('eae-particle-' + id, pdata);
-    //             }
-    //         } else if (typeof pdata_wrapper != 'undefined' && pdata_wrapper != null) {
-    //             console.log('Editor');
-    //             console.log(element_type);
-    //             // $scope.prepend('<div class="eae-particle-wrapper" id="eae-particle-'+ id +'"></div>');
-    //             //console.log('calling particle js else', JSON.parse(pdata_wrapper));
-    //             var bsElement = wrapper.querySelector('.eae-section-bs');
-    //             if (bsElement) {
-    //                 console.log("BS Inner");
-    //                 var particleDiv = document.createElement("div");
-    //                 particleDiv.setAttribute('class' ,  'eae-particle-areas');
-    //                 particleDiv.setAttribute('id' , "eae-particle-" + id);
-    //                 var bsElement = wrapper.querySelector('.eae-section-bs');
-    //                 bsElement.after(particleDiv);
-    //                 tsParticles.load("eae-particle-" + id, pdata_wrapper);
-    //             }else{
-    //                 if (element_type == 'column') {
-    //                     $scope.prepend('<div class="eae-particle-wrapper eae-particle-area" id="eae-particle-' + id + '"></div>');
-    //                 }
-    //                 else{
-    //                     console.log('Editor Section');
-    //                         console.log(pdata_wrapper);
-    //                         var particleDiv = document.createElement("div");
-    //                         particleDiv.setAttribute('class' ,  'eae-particle-areas');
-    //                         particleDiv.setAttribute('id' , "eae-particle-" + id);
-    //                         wrapper.prepend(particleDiv);
-    //                         // $scope.prepend('<div class="eae-particle-wrapper eae-particle-area" id="eae-particle-' + id + '"></div>');
-    //                 }
-    //                 tsParticles.load("eae-particle-" + id, pdata_wrapper);
-    //             }
-
-    //             //particlesJS('eae-particle-' + id, JSON.parse(pdata_wrapper));
-    //         }
-
-    //     }
-
-    // };
-
     /*EAE Animated Gradient Background*/
 
     var AnimatedGradient = function ($scope, $) {
@@ -630,215 +554,35 @@ var breakpoints = eae.breakpoints;
         }
       }
     };
-    // function render_unfold($scope) {
-    //     var w_id = $scope.data('id');
-    //     var element_type = $scope.data('element_type');
-    //     var $data_scope = '';
-    //     if($scope.hasClass('elementor-element-edit-mode')) {
-    //         $data_scope = $scope.find('.eae-unfold-setting-data');
-    //         if(element_type === 'widget' && $scope.find('.eae-unfold-setting-data').length === 0){
-    //             $data_scope = $scope.find('.eae-fold-yes.eae-rc');
-    //         }
-    //     }else{
-    //         $data_scope = $scope;
-    //     }
-    //     if(element_type === 'section'){
-    //         var $unfold_position = $data_scope.data('unfold-position');
-    //     }
-    //     var fold_text = $data_scope.data('fold-text');
-    //     var unfold_text = $data_scope.data('unfold-text');
-    //     var fold_icon = $data_scope.data('fold-icon');
-    //     var unfold_icon = $data_scope.data('unfold-icon');
-    //     var icon_pos = $data_scope.data('icon-pos');
-    //     var max_fold_height_data = $data_scope.data('fold-height');
-    //     var max_fold_height= '';
-    //     var win_width = $(window).width();
-    //     $(window).resize(function(){
-    //         win_width = $(window).width();
-    //     });
-    //     if(win_width >= breakpoints.lg - 1){
-    //         max_fold_height = max_fold_height_data.desktop;
-    //     }
-    //     else if(win_width <= breakpoints.lg - 1 && win_width >= breakpoints.md - 1){
-    //         max_fold_height = max_fold_height_data.tablet;
-    //     }else{
-    //         max_fold_height = max_fold_height_data.mobile;
-    //     }
-    //
-    //     var ani_speed = $data_scope.data('animation-speed');
-    //     var hover_ani = $data_scope.data('hover-animation');
-    //     var unfold_icon_type = $data_scope.data('unfold-icon-type');
-    //     var fold_icon_type = $data_scope.data('fold-icon-type');
-    //     var $button_str = '';
-    //     var unfold_icon_html = '';
-    //     var fold_icon_html = '';
-    //     var container_height = '';
-    //     var component = '';
-    //     if(unfold_icon_type === 'svg'){
-    //         unfold_icon_html = '<svg style="-webkit-mask: url('+ unfold_icon + '); mask: url('+ unfold_icon + '"); ></svg>';
-    //     }else{
-    //         unfold_icon_html = '<i class="'+unfold_icon +'"></i>';
-    //     }
-    //     if(fold_icon_type === 'svg'){
-    //         fold_icon_html = '<svg style="-webkit-mask: url('+ fold_icon + '); mask: url('+ fold_icon + '"); ></svg>';
-    //     }else{
-    //         fold_icon_html = '<i class="'+fold_icon +'"></i>';
-    //     }
-    //     if($scope.find('.eae-element-unfold-content').length > 0){
-    //         $scope.find('.eae-element-unfold-content').remove();
-    //         // console.log('unfold removed');
-    //     }
-    //     if(element_type === 'section'){
-    //         component = $scope.find('.elementor-container')[0];
-    //         $(component).css({
-    //             'max-height': 'unset',
-    //         });
-    //         container_height = $(component).outerHeight();
-    //         // console.log('section height' , container_height);
-    //     }
-    //     if(element_type === 'column'){
-    //         component = $scope.find('.elementor-column-wrap')[0];
-    //         $(component).css({
-    //             'max-height': 'unset',
-    //         });
-    //         container_height = $(component).outerHeight();
-    //         // console.log('column height' , container_height);
-    //     }
-    //
-    //     $button_str     =    '<div class="eae-element-unfold-content">';
-    //     $button_str    +=    '<a class="eae-unfold-link eae-'+hover_ani +'" href="#">';
-    //     if(icon_pos === 'before'){
-    //         $button_str    +=    '<span class="eae-unfold-button-icon eae-unfold-align-icon-'+ icon_pos+'">';
-    //         $button_str    +=    unfold_icon_html;
-    //         $button_str    +=    '</span>';
-    //     }
-    //     $button_str    +=    '<span class="eae-unfold-button-text">'+ unfold_text +'</span>';
-    //     if(icon_pos === 'after'){
-    //         $button_str    +=    ' <span class="eae-unfold-button-icon eae-unfold-align-icon-'+ icon_pos+'">';
-    //         $button_str    +=    unfold_icon_html;
-    //         $button_str    +=    '</span>';
-    //     }
-    //     $button_str     +=    '</div>';
-    //     $button_str    +=    '</a>';
-    //
-    //     if(element_type === 'column'){
-    //         $(component).css({
-    //             'max-height': max_fold_height,
-    //         });
-    //         if($scope.hasClass('elementor-element-'+ w_id)){
-    //             $(component).append($button_str);
-    //         }
-    //     }
-    //     if(element_type === 'section'){
-    //         $(component).css({
-    //             'max-height': max_fold_height,
-    //         });
-    //         if($unfold_position === 'inside'){
-    //             if($scope.hasClass('elementor-element-'+ w_id)){
-    //                 $(component).append($button_str);
-    //             }
-    //         }else{
-    //             if($scope.hasClass('elementor-element-'+ w_id)){
-    //                 $scope.append($button_str);
-    //             }
-    //         }
-    //
-    //     }
-    //     if(element_type === 'widget'){
-    //          $scope.append($button_str);
-    //     }
-    //     $scope.find('.eae-unfold-link').on('click',  function (e) {
-    //         e.preventDefault();
-    //
-    //         if(element_type === 'column' || element_type === 'section'){
-    //             var wrapper = $scope;
-    //             var wrapper_height = wrapper.outerHeight();
-    //             var unfold_height = wrapper.find('.eae-element-unfold-content').outerHeight();
-    //             // console.log('container height',container_height);
-    //             // console.log('unfold',unfold_height);
-    //             var totalHeight = container_height + unfold_height;
-    //
-    //             // console.log('total',totalHeight);
-    //             if((wrapper).hasClass('eae-fold-yes')){
-    //                 $(component).css({
-    //                     'max-height': 9999,
-    //                     'height' : max_fold_height,
-    //                 }).animate({'height': totalHeight}, {'duration': ani_speed },'linear');
-    //                 wrapper.toggleClass('eae-fold-yes');
-    //                 wrapper.find('.eae-unfold-button-text').html(fold_text);
-    //                 wrapper.find('.eae-unfold-button-icon').html(fold_icon_html);
-    //             }else{
-    //                 $(component).css({
-    //                     'max-height': totalHeight,
-    //                 }).animate({'max-height': max_fold_height}, {'duration': ani_speed },'linear');
-    //                 wrapper.toggleClass('eae-fold-yes');
-    //                 wrapper.find('.eae-unfold-button-text').html(unfold_text);
-    //                 wrapper.find('.eae-unfold-button-icon').html(unfold_icon_html);
-    //             }
-    //         }
-    //         if(element_type === 'widget'){
-    //             // console.log(max_fold_height);
-    //             var wrapper = $scope;
-    //             var widget_wrapper_height =  wrapper.outerHeight();
-    //             var inner_elements = wrapper.find('.elementor-widget-container').outerHeight();
-    //             var widget_unfold_height = wrapper.find('.eae-element-unfold-content').outerHeight();
-    //             // console.log('unfold' , unfold_height);
-    //             var widget_totalHeight = inner_elements + widget_unfold_height;
-    //             // console.log('total',totalHeight);
-    //             if((wrapper).hasClass('eae-fold-yes')){
-    //                 wrapper.css({
-    //                     'height': widget_wrapper_height,
-    //                     'max-height': 9999,
-    //                 }).animate({'height': widget_totalHeight}, {'duration': ani_speed },'liner');
-    //                 wrapper.toggleClass('eae-fold-yes');
-    //                 wrapper.find('.eae-unfold-button-text').html(fold_text);
-    //                 wrapper.find('.eae-unfold-button-icon').html(fold_icon_html);
-    //             }else{
-    //                 wrapper.css({
-    //                     'max-height': widget_totalHeight,
-    //                 }).animate({'max-height': max_fold_height}, {'duration': ani_speed },'liner');
-    //                 wrapper.toggleClass('eae-fold-yes');
-    //                 wrapper.find('.eae-unfold-button-text').html(unfold_text);
-    //                 wrapper.find('.eae-unfold-button-icon').html(unfold_icon_html);
-    //             }
-    //         }
-    //     })
-    //
-    // }
-    // var EaeUnfold = function ($scope, $) {
-    //     if ($scope.hasClass('eae-widget-unfold-yes')) {
-    //         $scope.imagesLoaded().done(function () {
-    //            render_unfold($scope);
-    //         });
-    //         $(window).resize(function(){
-    //             $scope.imagesLoaded().done(function () {
-    //                 // console.log('Resize Function Called');
-    //                 render_unfold($scope);
-    //             });
-    //         });
-    //         // $win = $(window);
-    //         // $win.on('resize', render_unfold($scope));
-    //
-    //     }
-    // };
 
-    var EaePopup = function ($scope, $) {
-      $preview_modal = $scope.find(".eae-popup-wrapper").data("preview-modal");
-      var effect = $scope.find(".eae-popup-wrapper").data("effect");
-      $close_btn_type = $scope
-        .find(".eae-popup-wrapper")
-        .data("close-button-type");
-      $close_btn = $scope.find(".eae-popup-wrapper").data("close-btn");
-      if ($close_btn_type == "icon") {
-        $close_btn_html = '<i class="eae-close ' + $close_btn + '"> </i>';
-      } else {
-        $close_btn_html =
-          '<svg class="eae-close" style="-webkit-mask: url(' +
-          $close_btn +
-          "); mask: url(" +
-          $close_btn +
-          '); "></svg>';
-      }
+	  var EaePopup = function ($scope, $) {
+		// To assign event
+		const eaePopupLoaded = new Event("eaePopupLoaded");
+		$preview_modal = $scope.find(".eae-popup-wrapper").data("preview-modal");
+		var effect = $scope.find(".eae-popup-wrapper").data("effect");
+		$close_btn_type = $scope
+			.find(".eae-popup-wrapper")
+			.data("close-button-type");
+		$close_btn = $scope.find(".eae-popup-wrapper").data("close-btn");
+		if ($close_btn_type == "icon") {
+			$close_btn_html = '<i class="eae-close ' + $close_btn + '"> </i>';
+		} else {
+			$close_btn_html =
+				'<svg class="eae-close" style="-webkit-mask: url(' +
+				$close_btn +
+				"); mask: url(" +
+				$close_btn +
+				'); "></svg>';
+		}
+	
+		/* var eae_popup = $scope.find('.eae-popup-container');
+		var eae_popup_id = eae_popup.attr('id');
+		popupInstance[eae_popup_id] = eae_popup.find('.eae-popup-content').html();
+		eae_popup.find('.eae-popup-content').html('');
+		var popup_link = $scope.find(".eae-popup-wrapper .eae-popup-link");
+		popup_link.on('click', function () {
+			eae_popup.find('.eae-popup-content').html(popupInstance[eae_popup.attr('id')]);
+		}); */
 
       $magnific = $scope.find(".eae-popup-link").eaePopup({
         type: "inline",
@@ -867,7 +611,7 @@ var breakpoints = eae.breakpoints;
 
         showCloseBtn: true,
 
-        enableEscapeKey: false,
+        enableEscapeKey: true,
 
         modal: false,
 
@@ -900,25 +644,22 @@ var breakpoints = eae.breakpoints;
                 }
             },
             open : function(){
+              
            /*    var id = $scope.find(".eae-popup-link").data("id");
               var swiper_container =  $('body').find('.eae-popup-' + id + ' .eae-swiper-outer-wrapper .eae-swiper-container');
               window.sswiper = swiper_container.swiper;
               sswiper.update();
               console.log(swiper_container); */
               var id = $scope.find(".eae-popup-link").data("id");
-              var wrapper = jQuery('.eae-popup-' + id + ' .elementor-widget-wrap');
-              wrapper.find('.elementor-section').each(function(){
-                elementorFrontend.elementsHandler.runReadyTrigger(jQuery(this));
-            });
-        
-            wrapper.find('.elementor-column').each(function(){
-                elementorFrontend.elementsHandler.runReadyTrigger(jQuery(this));
-            });
-            
-            wrapper.find('.elementor-widget').each(function(){
-                elementorFrontend.elementsHandler.runReadyTrigger(jQuery(this));
-            });
-            }
+              var wrapper = jQuery('.eae-popup-' + id + ' .elementor-element');
+              window.dispatchEvent(new Event("resize"));
+				      // To trigger the Event
+              
+			      },
+      
+			/* close: function () {
+				eae_popup.find('.eae-popup-content').html('');	
+			} */
           },
       });
 
@@ -1062,6 +803,7 @@ var breakpoints = eae.breakpoints;
         $icons = $(document).find($wrap_class).find(".eae-ic-icon-wrap");
 
         if (window.innerWidth < 767) {
+          
           $icons.each(function (index, value) {
             $(value).css("top", $(value).height() / 2 + 8 + "px");
             $(value)
@@ -1154,7 +896,6 @@ var breakpoints = eae.breakpoints;
 
     var TimelineHandler = function ($scope, $) {
       set_progress_bar();
-
       function set_progress_bar() {
         var pb = $scope.find(".eae-timline-progress-bar");
         var items = $scope.find(".eae-timeline-item");
@@ -1177,7 +918,7 @@ var breakpoints = eae.breakpoints;
           icon_width.eq(0)[0].offsetLeft + icon_width.eq(0).width() / 2
         );
         $(pb).css("display", "block");
-
+        
         items.each(function (index, value) {
           var waypoint = new Waypoint({
             element: $(value),
@@ -3026,6 +2767,7 @@ var breakpoints = eae.breakpoints;
         $(this).on("click", function (e) {
           e.preventDefault();
           let label = $(this).find(".eae-content-switch-label");
+          
           if ($(this).hasClass("active")) {
             return;
           } else {
@@ -3038,6 +2780,10 @@ var breakpoints = eae.breakpoints;
               ".eae-content-section-" + label_id
             );
             $(current_content_section).addClass("active");
+
+            // dispatch event resize using vanilla js
+            window.dispatchEvent(new Event("resize"));
+            
           }
         });
       });
@@ -3061,7 +2807,6 @@ var breakpoints = eae.breakpoints;
       let secondary_content_section = wrapper.find(
         ".eae-cs-content-section.eae-content-section-" + secondary_id
       );
-
       $(toggle_switch).on("click", function (e) {
         var checkbox = $(this).find("input.eae-content-toggle-switch");
         if (checkbox.is(":checked")) {
@@ -3075,7 +2820,9 @@ var breakpoints = eae.breakpoints;
           secondary_label.removeClass("active");
           secondary_content_section.removeClass("active");
         }
+          window.dispatchEvent(new Event("resize"));
       });
+
     };
 
     var FilterableGallery = function ($scope, $) {
@@ -3362,51 +3109,74 @@ var breakpoints = eae.breakpoints;
       swiper_outer_wrapper = $scope.find(".eae-swiper-outer-wrapper");
       wid = $scope.data("id");
       wClass = ".elementor-element-" + wid;
-      thumb_outer_wrapper = $scope.find(".eae-gallery-thumbs");
+		  thumb_outer_wrapper = $scope.find(".eae-gallery-thumbs");
+		  let sswiper;
       let slider_data = swiper_outer_wrapper.data("swiper-settings");
-      
       let slides_per_view = swiper_outer_wrapper.data("slides-per-view");
       let spaceBetween = swiper_outer_wrapper.data("space");
+      let active_breakpoints = elementorFrontend.config.responsive.activeBreakpoints;
       //let navigation         = swiper_outer_wrapper.data('navigation');
 
       // BreakPoints Thumbnail
-      const bp = eae.breakpoints;
-      let breakpoints = {};
-      breakpoints[bp.lg - 1] = {
-        slidesPerView: slides_per_view.desktop,
-        spaceBetween: spaceBetween.desktop,
-      };
-      breakpoints[bp.md - 1] = {
-        slidesPerView: slides_per_view.tablet,
-        spaceBetween: spaceBetween.tablet,
-      };
 
-      // BreakPoints Slider
-      const Bp = eae.breakpoints;
-      let BreakPoints = {};
-      BreakPoints[Bp.lg - 1] = {
-        spaceBetween: slider_data.spaceBetween.desktop,
-      };
-      BreakPoints[Bp.md - 1] = {
-        spaceBetween: slider_data.spaceBetween.tablet,
-      };
+      
 
+      // const bp = eae.breakpoints;
+      // let breakpoints = {};
+      // breakpoints[bp.lg - 1] = {
+      //   slidesPerView: slides_per_view.desktop,
+      //   spaceBetween: spaceBetween.desktop,
+      // };
+      // breakpoints[bp.md - 1] = {
+      //   slidesPerView: slides_per_view.tablet,
+      //   spaceBetween: spaceBetween.tablet,
+      // };
+
+
+      // BreakPoints Slider Form main slide
+      // const res_props = {
+      //   'slidesPerView' : 'slidesPerView',
+      //   'slidesPerGroup' : 'slidesPerGroup',
+      //   'spaceBetween' : 'spaceBetween'
+      // };
+
+      // if(active_breakpoints.hasOwnProperty('mobile')){
+      //   for (const key in res_props) {
+      //     if (slider_data.hasOwnProperty(key)) {
+      //       sliderData[key] = data[key].mobile;       
+      //     }
+      //     if(slider_data.thumb.hasOwnProperty(key)){
+      //       slider_data[thumbs][key] = data[key].mobile;       
+      //     }
+      //   }
+      // }
+
+      // let BreakPoints = {};
+      // BreakPoints[Bp.lg - 1] = {
+      //   spaceBetween: slider_data.spaceBetween.desktop,
+      // };
+      // BreakPoints[Bp.md - 1] = {
+      //   spaceBetween: slider_data.spaceBetween.tablet,
+      // };
+      
+      //console.log('mainSlider',BreakPoints);
+      
       sliderData = {
         direction: "horizontal",
         effect: slider_data.effect,
         keyboard: {
           enabled: slider_data.keyboard,
         },
-        spaceBetween: slider_data.spaceBetween.mobile,
-        breakpoints: BreakPoints,
+        // spaceBetween: slider_data.spaceBetween.mobile,
+        // breakpoints: BreakPoints,
         speed: slider_data.speed,
         loop: "yes" === slider_data.loop ? true : false,
         thumbs: {
           swiper: {
-            el: thumb_outer_wrapper,
+            el: wClass + ' .eae-gallery-thumbs',
             direction: "horizontal",
-            spaceBetween: spaceBetween.mobile,
-            slidesPerView: slides_per_view.mobile,
+            // spaceBetween: spaceBetween.mobile,
+            // slidesPerView: slides_per_view.mobile,
             navigation: {
               nextEl: wClass + " .eae-swiper-button-next",
               prevEl: wClass + " .eae-swiper-button-prev",
@@ -3416,13 +3186,66 @@ var breakpoints = eae.breakpoints;
             freeMode: true,
             watchSlidesVisibility: true,
             watchSlidesProgress: true,
-            breakpoints: breakpoints,
+            //breakpoints: breakpoints,
             // autoScrollOffset :true,
             // reverseDirection : true,
             slideToClickedSlide: true,
-          },
-        },
+			    },
+		    },
       };
+
+      const res_props = {
+        'slidesPerView' : 'slidesPerView',
+        'slidesPerGroup' : 'slidesPerGroup',
+        'spaceBetween' : 'spaceBetween'
+      };
+
+      if(active_breakpoints.hasOwnProperty('mobile')){
+        for (const key in res_props) {
+          if (slider_data.hasOwnProperty(key)) {
+            sliderData[key] = slider_data[key].mobile;       
+          }
+          if(slider_data.thumbs.hasOwnProperty(key)){
+            sliderData.thumbs.swiper[key] = slider_data.thumbs[key].mobile;       
+          }
+        }
+      }
+
+      
+      const arr = {};
+      const arrThumbs = {};
+
+		// Responsive BreakPoints Sets
+		if(slider_data.hasOwnProperty('breakpoints_value')){
+        Object.keys(slider_data.breakpoints_value).map(key => {
+          //console.log('Key', key);
+          const value = parseInt(slider_data.breakpoints_value[key]); 
+          //console.log('Value', value);
+          if(key === 'desktop'){
+            key = 'default';
+          }
+          if(key  !== 'mobile'){
+            const spaceBetween = parseInt(slider_data.spaceBetween[key]);
+            // const slidesPerView = parseInt(slider_data.slidesPerView[key]);
+            // const slidesPerGroup = parseInt(slider_data.slidesPerGroup[key]);
+            arr[value - 1] = {
+              spaceBetween,
+            };
+  
+            const spaceBetweenThumbs = parseInt(slider_data.thumbs.spaceBetween[key]);
+            const slidesPerViewThumbs = parseInt(slider_data.thumbs.slidesPerView[key]);
+            //const slidesPerGroupThumbs = parseInt(slider_data.thumbs.slidesPerGroup[key]);
+            arrThumbs[value - 1] = {
+              spaceBetween : spaceBetweenThumbs,
+              slidesPerView : slidesPerViewThumbs,
+            };
+          }
+          
+        });
+		}
+    sliderData.breakpoints = arr;
+    sliderData.thumbs.swiper.breakpoints = arrThumbs;
+    
       if (typeof slider_data.autoplay !== "undefined") {
         sliderData["thumbs"]["swiper"]["autoplay"] = {
           delay: slider_data.autoplay.duration,
@@ -3445,7 +3268,6 @@ var breakpoints = eae.breakpoints;
           clickable: slider_data.clickable,
         };
       }
-
       if (typeof slider_data.autoplay !== "undefined") {
         sliderData["autoplay"] = {
           delay: slider_data.autoplay.duration,
@@ -3453,7 +3275,6 @@ var breakpoints = eae.breakpoints;
           reverseDirection: slider_data.autoplay.reverseDirection,
         };
       }
-
       if ("undefined" === typeof Swiper) {
         const asyncSwiper = elementorFrontend.utils.swiper;
         new asyncSwiper(jQuery(
@@ -3483,12 +3304,16 @@ var breakpoints = eae.breakpoints;
         if (pause_on_hover == "yes") {
           jQuery(wClass + " .eae-swiper-container").hover(
             function () {
-              sswiper.autoplay.stop();
-              sswiper.thumbs.swiper.autoplay.stop();
+              if(sswiper != undefined){
+                sswiper.autoplay.stop();
+                sswiper.thumbs.swiper.autoplay.stop();
+              }
             },
             function () {
-              sswiper.autoplay.start();
-              sswiper.thumbs.swiper.autoplay.start();
+              if(sswiper != undefined){
+                sswiper.autoplay.start();
+                sswiper.thumbs.swiper.autoplay.start();
+              }
             }
           );
         }
@@ -3511,8 +3336,21 @@ var breakpoints = eae.breakpoints;
       const chartclass = ".elementor-element-" + cid;
       const chart_canvas = $scope.find("#eae-chart-canvas");
       let settings = Chart_Outer_Wrapper.data("settings");
-
-      new Chart(chart_canvas, settings);
+      const pie_chart = $scope.find(".eae-chart-outer-container");  
+      pie_chart.each(function (index,value){
+        var waypoint =new Waypoint({
+          element:value,
+          handler: function (direction) {
+                  if (direction == "down") {
+                    if(!value.classList.contains("trigger")){
+                      value.classList.add("trigger");
+                      new Chart(chart_canvas, settings);
+                    }                
+                  } 
+                },
+                offset:'70%'
+          });
+      });
     };
 
     let EAETable = function ($scope, $) {
@@ -3636,13 +3474,13 @@ var breakpoints = eae.breakpoints;
       let show_thumbnail = outer_wrapper.data('show-thumbnail');
       if(show_thumbnail === 'yes'){
         const thumb_data = outer_wrapper.data('thumb-settings');
-        console.log('swiper data', data);
-        console.log('In Condi', thumb_data);
+        // console.log('swiper data', data);
+        // console.log('In Condi', thumb_data);
         $thumb_obj = prepare_thumb_object(active_breakpoints,res_props,thumb_data,data.breakpoints_value); 
         $thumb_obj['el'] = jQuery('.elementor-element-' + wid + ' .eae-thumb-container');
       }
 
-      console.log('dfadfadfaf ==--->',$thumb_obj);
+      //console.log('dfadfadfaf ==--->',$thumb_obj);
       if (typeof data === "undefined") {
         return false;
       }
@@ -3725,12 +3563,12 @@ var breakpoints = eae.breakpoints;
       }
         
       // swiper['init'] = false;
-      console.log('last swiper =----->', swiper);
+      //console.log('last swiper =----->', swiper);
 
 
       if ("undefined" === typeof Swiper) {
         const asyncSwiper = elementorFrontend.utils.swiper;
-        console.log('swiper container',swiperContainer);
+        //console.log('swiper container',swiperContainer);
         new asyncSwiper( jQuery( swiperContainer ), swiper).then((newSwiperInstance) => {
           let mswiper = newSwiperInstance;
           after_swiper_load_func(mswiper);
@@ -3873,12 +3711,496 @@ var breakpoints = eae.breakpoints;
     }
 
     const pause_on_hover_func = function(mswiper, pause_on_hover, wid) {
+      //console.log('called');
       jQuery('.elementor-element-' + wid + ' .eae-swiper-container').hover(function () {
           mswiper.autoplay.stop();
       }, function () {
           mswiper.autoplay.start();
       });
+    }
+
+    const EAEContentTicker = function($scope){
+      let wid = $scope.data('id');
+      let swiperContainer = $scope.find('.swiper');
+      swiper_outer = $scope.find(".eae-content-ticker-wrapper");
+      let swiper_data = swiper_outer.data("swiper");
+      let swiper = {};
+      swiper = {
+        effect : swiper_data.effect,
+        loop : swiper_data.loop,
+        speed : swiper_data.speed,
+        slidesPerView: 1,
+        spaceBetween: 30, 
+        fadeEffect: {
+        crossFade: true
+        },   
+      }
+      if(swiper_data.autoplayDuration != null){
+        swiper['autoplay'] = {
+          delay : swiper_data.autoplayDuration,   
+          disableOnInteraction: true,      
+        }
+      }     
+      if(swiper_data.keyboardControl != false){
+        swiper['keyboard'] ={
+          enabled: true,
+        }
+      }
+
+      if (swiper_data.arrows === 'yes') {
+        swiper['navigation'] = {
+            nextEl: '.eae-navigation-icon-wrapper .eae-swiper-button-next',
+            prevEl: '.eae-navigation-icon-wrapper .eae-swiper-button-prev',
+        }
+      }
+      if(swiper_data.direction != 'null' && swiper_data.effect == 'slide'){
+        swiper['direction'] = swiper_data.direction
+      }
+      if ("undefined" === typeof Swiper) {
+        const asyncSwiper = elementorFrontend.utils.swiper;       
+        new asyncSwiper( jQuery( swiperContainer ), swiper).then((newSwiperInstance) => {
+          let mswiper = newSwiperInstance;   
+          const pause_on_hover = swiper_data.pauseOnHover;
+            if (pause_on_hover == 'true') {
+              jQuery('.elementor-element-' + wid + ' .eae-content-ticker-content-wrapper').hover(function () {
+                mswiper.autoplay.stop();
+            }, function () {
+                mswiper.autoplay.start();
+            });
+          }
+        });
+      }  
+    }
+
+    
+
+    
+   
+const EAERadialChart = function($scope){
+  const Chart_Wrapper = $scope.find(".eae-radial-chart-container");
+   
+  const pie_chart = $scope.find(".eae-radial-chart");    
+  let settings = Chart_Wrapper.data("chart");
+  if(settings.type=='polarArea' && settings.enablePercentage=='true'){
+    settings.options.scales.r.ticks['callback'] = function(value, index, values) {
+      return `${value}%`;
+    } 
   }
+  pie_chart.each(function (index,value){      
+    var waypoint =new Waypoint({
+      element:value,
+      handler: function (direction) {
+              if (direction == "down") {
+                if(!value.classList.contains("trigger")){
+                  value.classList.add("trigger");
+                  new Chart(pie_chart, settings);
+                }                
+              } 
+            },
+            offset: "bottom-in-view"
+        }) 
+    })
+}
+
+const EAECouponCode = function($scope){
+    const eId = $scope.data('id');
+    console.log('eID', eId);
+    const element = document.querySelector('.elementor-element-' + eId);
+    console.log('element', element);
+    const wrapper = element.querySelector('.wts-eae-coupon-code-wrapper');
+    console.log('wrapper', wrapper);
+}
+
+var ModuleHandler = elementorModules.frontend.handlers.Base,
+            CouponCodeHandler;
+
+            CouponCodeHandler = ModuleHandler.extend({
+                getDefaultSettings: function getDefaultSettings() {
+                    return {
+                        settings: this.getElementSettings(),
+                    };
+                },
+                getDefaultElements: function getDefaultElements(){
+                    
+                    const eId = this.$element.data('id');
+                    const element = document.querySelector('.elementor-element-' + eId);
+                    const wrapper = element.querySelector('.wts-eae-coupon-code-wrapper');
+                    return {
+                        eid: eId,
+                        element: element,
+                        wrapper: wrapper,
+                    }
+                },
+                onInit: function onInit(){
+                    const { settings } = this.getDefaultSettings();
+                    const { wrapper } = this.getDefaultElements();
+                    const { element } = this.getDefaultElements();
+
+                    var couponWrapper = element.querySelector('.eae-cc-button');
+                    var textWrapper = element.querySelector('.eae-code');
+                     
+
+                    let lottieWrapper  =  element.querySelectorAll('.wts-eae-coupon-code-wrapper');
+                    lottieWrapper.forEach(data => {
+                        let isLottiePanle = data.querySelector('.eae-lottie');
+                        if (isLottiePanle != null) {
+                            let lottie_data = JSON.parse(isLottiePanle.getAttribute('data-lottie-settings'));
+                            let eae_animation = lottie.loadAnimation({
+                                container: isLottiePanle,
+                                path: lottie_data.url,
+                                renderer: "svg",
+                                loop: lottie_data.loop,
+                            });
+
+                            if (lottie_data.reverse == true) {
+                                eae_animation.setDirection(-1);
+                            }
+                        }
+                    })
+
+                    if(couponWrapper != null){            
+                    couponWrapper.addEventListener('click', function() {
+                        const textToCopy = textWrapper.getAttribute('data-code-value');
+                        const tempElement = document.createElement('textarea');
+                        tempElement.value = textToCopy;
+                        document.body.appendChild(tempElement);
+                        tempElement.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempElement);
+                        const text = couponWrapper.innerHTML;
+                        if(settings.coupon_type == 'scratch' || settings.coupon_type == 'peel' || settings.coupon_type == 'slide' ){
+                            couponWrapper.innerText = settings.peel_after_copy_button;
+                        }else{
+                            couponWrapper.innerText = settings.after_copy_button;
+                        }
+                        let time
+                        if(settings.coupon_type == 'standard'){
+                          time = settings.sta_speed
+                        }else{
+                          time = settings.peel_speed
+                        }
+
+                        setTimeout(function() {
+                            couponWrapper.innerHTML = text;
+                        }, time);
+
+                    });
+
+                  }
+
+                    if(settings.coupon_type == 'peel' && settings.dynamic_coupon != ''){
+                        var eaePeel = new Peel('#fade-out', {
+                            corner: Peel.Corners.TOP_RIGHT
+                        });
+                        eaePeel.setFadeThreshold(.9);
+                        
+                        eaePeel.handleDrag(function(evt, x, y) {
+                            this.setPeelPosition(x, y);
+                            if (eaePeel.getAmountClipped() === 1) {
+                                eaePeel.removeEvents();
+                            }
+                        });
+                        eaePeel.setPeelPosition(440, 100);
+                    }
+
+                if(settings.sta_layout == 'pop' && settings.dynamic_coupon != ''){
+                    const popWrapper = wrapper.querySelector(".eae-coupon-popup-link");
+                    
+                    const wId = element.getAttribute('data-id');
+                   
+                    if (settings.pop_icon.library == "svg") {
+
+                      $close_btn_html = '';
+
+                        $close_btn_html =
+                        '<svg class="eae-close" style="-webkit-mask-image: url(' +
+                        settings.pop_icon.value.url +
+                        "); mask-image: url(" +
+                        settings.pop_icon.value.url +
+                        '); "></svg>';
+                        } else {
+                            $close_btn_html = '<i class="eae-close ' + settings.pop_icon.value + '"> </i>';
+                        }
+                    $(popWrapper).eaePopup({
+                        type:'inline',
+                        midClick: true, // Allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source in href.
+                        mainClass:"eae-coupon-popup eae-popup  eae-cc-"+wId,
+                        closeMarkup: $close_btn_html,
+                        closeBtnInside: settings.btn_in_out == 'yes' ? true : false ,
+                        callbacks : {
+                            beforeOpen: function() {
+                              if(settings.effect != ''){
+                                  this.st.mainClass = " eae-coupon-popup eae-popup  eae-cc-"+wId+ " mfp-"+settings.effect;
+                              }
+                            },
+                            open : function(){
+                                var id = popWrapper.getAttribute('data-id');
+                                const popUp = document.querySelector(".eae-coupon-popup-"+ id)
+                                var couponWrapper = popUp.querySelector('.eae-cc-button');
+                                var textWrapper = popUp.querySelector('.eae-code');  
+                                const text = couponWrapper.innerText;
+                                
+                                
+                                couponWrapper.addEventListener('click', function() {
+                                  
+                                    // const textToCopy = textWrapper.innerText;
+                                    const textToCopy = textWrapper.getAttribute('data-code-value');
+                                    console.log('',textToCopy);
+                                    const tempElement = document.createElement('textarea');
+                                    tempElement.value = textToCopy;
+                                    popUp.appendChild(tempElement);
+                                    tempElement.select();
+                                    document.execCommand('copy');
+                                    popUp.removeChild(tempElement);
+                                   
+                                    couponWrapper.innerText = settings.after_copy_button;
+                                    setTimeout(function() {
+                                        couponWrapper.innerText = text;
+                                    }, settings.sta_speed);
+                                });
+                            }
+                        }
+                    });
+
+                    if (settings.preview_modal == "yes" && elementorFrontend.isEditMode()) {
+                      popWrapper.click()
+                    }
+
+                  }
+                    if(settings.coupon_type == 'slide' && settings.dynamic_coupon != '' ){
+                      var draggable = wrapper.querySelector(".eae-slide-fr");
+                      if(settings.preview_modal == 'yes' && elementorFrontend.isEditMode()){
+                        draggable.style.display = 'none';
+                      }else{
+                        var posX = 0,
+                              posY = 0,
+                              mouseX = 0,
+                              mouseY = 0;
+
+                              draggable.addEventListener('mousedown', mouseDown, false);
+                          
+                          window.addEventListener('mouseup', mouseUp, false);
+
+                          function mouseDown(e) {
+                          e.preventDefault();
+                          posX = e.clientX - draggable.offsetLeft;
+                          posY = e.clientY - draggable.offsetTop;
+                          window.addEventListener('mousemove', moveElement, false);
+                          }
+
+                          function mouseUp() {
+                          window.removeEventListener('mousemove', moveElement, false);
+                          }
+
+                          function moveElement(e) {
+                            mouseX = e.clientX - posX;
+                            mouseY = e.clientY - posY;
+                            if(!(mouseX > 2) && !(mouseX < settings.Peel_scratch_width )  ){
+                                
+                                draggable.style.left = mouseX + 'px';
+                            }
+                          }
+
+                            const draggableElement = draggable;
+                            let offsetX;
+                            draggableElement.addEventListener('touchstart', (e) => {
+                            const touch = e.touches[0];
+                            offsetX = touch.clientX - draggableElement.getBoundingClientRect().left;
+                            // offsetY = touch.clientY - draggableElement.getBoundingClientRect().top;
+                            draggableElement.style.cursor = 'grabbing';
+                            });
+                            draggableElement.addEventListener('touchmove', (e) => {
+                            if (offsetX === undefined) return;
+                            const touch = e.touches[0];
+                            const x = touch.clientX - offsetX;
+                            if(!(x > 4) && !(x < settings.Peel_scratch_width )  ){
+                              draggableElement.style.left = x + 'px';
+                            }
+                          
+                            });
+                            draggableElement.addEventListener('touchend', () => {
+                            offsetX = undefined;
+                          
+                            draggableElement.style.cursor = 'grab';
+                            });
+
+                      }
+                  }
+                    
+                    if(settings.coupon_type === 'scratch' && settings.dynamic_coupon != ''){
+                      if(settings.preview_modal == 'yes' && elementorFrontend.isEditMode()){
+                        wrapper.querySelector('#eae-scratch-canvas').style.display = 'none';
+                      }
+                        
+                      else{
+                        var isDrawing, lastPoint;
+                          
+                            canvas    = wrapper.querySelector('#eae-scratch-canvas')
+                             var canvasWidth  = canvas.width,
+                              canvasHeight = canvas.height,
+                              ctx          = canvas.getContext('2d'),
+                              image        = new Image(),
+                              brush        = new Image();
+
+                            if(settings.item_bg_image == null  && settings.item_bg_color == null && settings.item_bg_color_b == null){
+                              image.src = eae.plugin_url + 'assets/img/coupon/scratch_img.png';
+                              image.onload = function() {
+                                ctx.drawImage(image, 0, 0,canvasWidth,canvasHeight); 
+                              };
+                            }
+                             
+                            if(settings.item_bg_image != null){
+                              image.src = settings.item_bg_image.url;
+                              image.onload = function() {
+                                ctx.drawImage(image, 0, 0,canvasWidth,canvasHeight); 
+                              };
+                            } else if(settings.item_bg_color_b == null && settings.item_bg_background == 'classic' && settings.item_bg_image == null ){
+                              if(settings.item_bg_color != null){
+                                let gradientColor = ctx.createLinearGradient(0, 0, 135, 135);
+                                gradientColor.addColorStop(0, settings.item_bg_color );
+                                ctx.fillStyle = gradientColor;
+                                ctx.fillRect(0, 0, canvasWidth,canvasHeight);
+                              }
+                            } else if(settings.item_bg_color_b != null && settings.item_bg_color != null && settings.item_bg_background == 'gradient' && settings.item_bg_image == null){
+                              let gradientColor = ctx.createLinearGradient(0, 0, settings.item_bg_color_stop.size , settings.item_bg_color_b_stop.size);
+                              gradientColor.addColorStop(0,   settings.item_bg_color);
+                              gradientColor.addColorStop(1, settings.item_bg_color_b)
+                              ctx.fillStyle = gradientColor;
+                              ctx.fillRect(0, 0, canvasWidth,canvasHeight);
+                            }
+                            
+                            brush.src = eae.plugin_url + 'assets/img/coupon/brush.png'
+                            canvas.addEventListener('mousedown', handleMouseDown, false);
+                            canvas.addEventListener('touchstart', handleMouseDown, false);
+                            canvas.addEventListener('mousemove', handleMouseMove, false);
+                            canvas.addEventListener('touchmove', handleMouseMove, false);
+                            canvas.addEventListener('mouseup', handleMouseUp, false);
+                            canvas.addEventListener('touchend', handleMouseUp, false);
+                            
+                            function distanceBetween(point1, point2) {
+                              return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+                            }
+                            
+                            function angleBetween(point1, point2) {
+                              return Math.atan2( point2.x - point1.x, point2.y - point1.y );
+                            }
+                            
+                            // Only test every `stride` pixel. `stride`x faster,
+                            // but might lead to inaccuracy
+                            function getFilledInPixels(stride) {
+                              if (!stride || stride < 1) { stride = 1; }
+
+                            
+                              
+                              var pixels   = ctx.getImageData(0, 0, canvasWidth, canvasHeight),
+                                  pdata    = pixels.data,
+                                  l        = pdata.length,
+                                  total    = (l / stride),
+                                  count    = 0;
+
+                              // Iterate over all pixels
+                              for(var i = count = 0; i < l; i += stride) {
+                                if (parseInt(pdata[i]) === 0) {
+                                  count++;
+                                }
+                              }
+                              
+                              return Math.round((count / total) * 100);
+                            }
+                            
+                            function getMouse(e, canvas) {
+                              var offsetX = 0, offsetY = 0, mx, my;
+                          
+                              if (canvas.offsetParent !== undefined) {
+                                do {
+                                  offsetX += canvas.offsetLeft;
+                                  offsetY += canvas.offsetTop;
+                                } while ((canvas = canvas.offsetParent));
+                              }
+                          
+                              mx = (e.pageX || e.touches[0].clientX) - offsetX;
+                              my = (e.pageY || e.touches[0].clientY) - offsetY;
+                          
+                              return {x: mx, y: my};
+                            }
+                            
+                            function handlePercentage(filledInPixels) {
+                              filledInPixels = filledInPixels || 0;
+                              if (filledInPixels > 40) {
+                                const textWrapper = wrapper.querySelector('.eae-back-wrapper');
+                                textWrapper.style.zIndex = '1';
+                                const canvasWrap = wrapper.querySelector('.eae-coupon-canvas');
+                                canvasWrap.remove();
+
+                              }
+                            }
+                            
+                            function handleMouseDown(e) {
+                              isDrawing = true;
+                              lastPoint = getMouse(e, canvas);
+                            }
+                          
+                            function handleMouseMove(e) {
+                              if (!isDrawing) { return; }
+                              
+                              e.preventDefault();
+                          
+                              var currentPoint = getMouse(e, canvas),
+                                  dist = distanceBetween(lastPoint, currentPoint),
+                                  angle = angleBetween(lastPoint, currentPoint),
+                                  x, y;
+                              
+                              for (var i = 0; i < dist; i++) {
+                                x = lastPoint.x + (Math.sin(angle) * i) - 25;
+                                y = lastPoint.y + (Math.cos(angle) * i) - 25;
+                                ctx.globalCompositeOperation = 'destination-out';
+                                ctx.drawImage(brush, x, y);
+                              }
+                              
+                              lastPoint = currentPoint;
+                              handlePercentage(getFilledInPixels(32));
+                            }
+                          
+                            function handleMouseUp(e) {
+                              isDrawing = false;
+                            }     
+                      }
+                                                   
+                    }                    
+                },
+                onElementChange: function onElementChange(propertyName) {                  
+                  const { wrapper } = this.getDefaultElements();
+                  const { settings } = this.getDefaultSettings();
+                  if(settings.dynamic_coupon != '' && settings.source == 'dynamic' || settings.source == 'static')  {
+                    if(settings.coupon_type === 'scratch'){
+                      var  canvas    = wrapper.querySelector('#eae-scratch-canvas')
+                    }
+                  }
+                   
+                  if ( propertyName == 'item_bg_background' || propertyName == 'item_bg_color' ||
+                       propertyName == 'item_bg_color_b' || propertyName == 'item_bg_color_stop' || propertyName == 'item_bg_color_b_stop' ){
+                      var   canvasWidth  = canvas.width,
+                      canvasHeight = canvas.height,
+                      ctx = canvas.getContext('2d')
+                    if(settings.item_bg_color_b == null && settings.item_bg_background == 'classic'){
+                      // let gradientColor = ctx.createLinearGradient(0, 0, 135, 135);
+                      // gradientColor.addColorStop(0, settings.item_bg_color );
+                      // gradientColor.addColorStop(1, "#6414E9")
+                      ctx.fillStyle = settings.item_bg_color;
+                      ctx.fillRect(0, 0, canvasWidth,canvasHeight);
+                    }
+                    if(settings.item_bg_color_b != null && settings.item_bg_background == 'gradient'){
+                      let gradientColor = ctx.createLinearGradient(0, 0, settings.item_bg_color_stop.size , settings.item_bg_color_b_stop.size);
+                      gradientColor.addColorStop(0, settings.item_bg_color );
+                      gradientColor.addColorStop(1, settings.item_bg_color_b)
+                      ctx.fillStyle = gradientColor;
+                      ctx.fillRect(0, 0, canvasWidth,canvasHeight);
+                    }
+                  }   
+                        
+                },
+
+            });
 
     elementorFrontend.hooks.addAction(
       "frontend/element_ready/wts-ab-image.default",
@@ -4028,5 +4350,26 @@ var breakpoints = eae.breakpoints;
       "frontend/element_ready/eae-anythingcarousel.default",
       EAEAnythingCarousel
     );
+    elementorFrontend.hooks.addAction(
+      "frontend/element_ready/wts-content-ticker.default",
+      EAEContentTicker
+    );
+   
+    elementorFrontend.hooks.addAction(
+      "frontend/element_ready/eae-radial-charts.default",
+      EAERadialChart
+    );
+
+    // elementorFrontend.hooks.addAction(
+    //   "frontend/element_ready/eae-coupon-code.default",
+    //   EAECouponCode
+    // );
+
+    elementorFrontend.hooks.addAction('frontend/element_ready/eae-coupon-code.default', function ($scope) {	
+      elementorFrontend.elementsHandler.addHandler(CouponCodeHandler, {
+          $element: $scope
+        });
+  });
+    
   });
 })(jQuery);

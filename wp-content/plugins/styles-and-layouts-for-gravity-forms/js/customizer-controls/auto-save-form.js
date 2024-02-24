@@ -13,31 +13,37 @@
         if ($('#customize-control-gf_stla_hidden_field_for_form_id').length) {
             $('#customize-control-gf_stla_select_form_id select').val(-1);
         }
-
+        
+        
         var formId = $('#customize-control-gf_stla_select_form_id select').val();
-
         //hide all the selection fields if no form selected
         $('body').on('click', '#accordion-panel-gf_stla_panel', function() {
-            if ($('#customize-control-gf_stla_hidden_field_for_form_id').length) {
-                $('#accordion-section-gf_stla_form_id_form_wrapper').hide();
-                $('#accordion-section-gf_stla_form_id_form_header').hide();
-                $('#accordion-section-gf_stla_form_id_form_title_description').hide();
-                $('#accordion-section-gf_stla_form_id_submit_button').hide();
-                $('#accordion-section-gf_stla_form_id_field_labels').hide();
-                $('#accordion-section-gf_stla_form_id_field_descriptions').hide();
-                $('#accordion-section-gf_stla_form_id_text_fields').hide();
-                $('#accordion-section-gf_stla_form_id_dropdown_fields').hide();
-                $('#accordion-section-gf_stla_form_id_radio_inputs').hide();
-                $('#accordion-section-gf_stla_form_id_checkbox_inputs').hide();
-                $('#accordion-section-gf_stla_form_id_paragraph_textarea').hide();
-                $('#accordion-section-gf_stla_form_id_section_break_title_description').hide();
-                $('#accordion-section-gf_stla_form_id_confirmation_message').hide();
-                $('#accordion-section-gf_stla_form_id_error_message').hide();
-                $('#accordion-section-gf_stla_form_id_addons').hide();
-                $('#accordion-section-gf_stla_form_id_field_sub_labels').hide();
-                $('#accordion-section-gf_stla_form_id_general_settings').hide();
-                $('#accordion-section-gf_stla_form_id_list_field').hide();
-                $('#accordion-section-gf_stla_form_id_placeholders').hide();
+
+            if ($('#customize-control-gf_stla_hidden_field_for_form_id').length ) {
+
+                // customizer was overriding the code so added timeout to work it after customizer code finishes.
+                setTimeout(function(){
+                    $('#accordion-section-gf_stla_form_id_form_header').hide();
+                    $('#accordion-section-gf_stla_form_id_form_title_description').hide();
+                    $('#accordion-section-gf_stla_form_id_submit_button').hide();
+                    $('#accordion-section-gf_stla_form_id_field_labels').hide();
+                    $('#accordion-section-gf_stla_form_id_field_descriptions').hide();
+                    $('#accordion-section-gf_stla_form_id_text_fields').hide();
+                    $('#accordion-section-gf_stla_form_id_dropdown_fields').hide();
+                    $('#accordion-section-gf_stla_form_id_radio_inputs').hide();
+                    $('#accordion-section-gf_stla_form_id_checkbox_inputs').hide();
+                    $('#accordion-section-gf_stla_form_id_paragraph_textarea').hide();
+                    $('#accordion-section-gf_stla_form_id_section_break_title_description').hide();
+                    $('#accordion-section-gf_stla_form_id_confirmation_message').hide();
+                    $('#accordion-section-gf_stla_form_id_error_message').hide();
+                    $('#accordion-section-gf_stla_form_id_addons').hide();
+                    $('#accordion-section-gf_stla_form_id_field_sub_labels').hide();
+                    $('#accordion-section-gf_stla_form_id_general_settings').hide();
+                    $('#accordion-section-gf_stla_form_id_list_field').hide();
+                    $('#accordion-section-gf_stla_form_id_placeholders').hide();
+                }, 200)
+               
+
             }
         });
 
@@ -49,7 +55,7 @@
             $('#customize-preview iframe').hide();
             waitforformsubmit = setInterval(check_button_disabled, 1000);
         });
-
+        
         function check_button_disabled() {
             if (!$('body.wp-customizer').hasClass('saving')) {
                 clearInterval(waitforformsubmit);

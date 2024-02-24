@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace WTS_EAE\Modules\AdvanceButton\Widgets;
 
@@ -24,13 +24,13 @@ class AdvanceButton extends EAE_Widget_Base {
 	}
 
 	public function get_title() {
-		return __( 'EAE - Advance Button', 'wts-eae' );
+		return __( 'Advanced Button', 'wts-eae' );
 	}
 
 	public function get_icon() {
-		return 'eae-icons eae-dual-button';
+		return 'eae-icon eae-advance-button';
 	}
-
+    
     protected function register_controls()
     {
 
@@ -38,7 +38,7 @@ class AdvanceButton extends EAE_Widget_Base {
             'advance button',
             [
                 'label'=>esc_html__('Advance Button','wts-eae'),
-            ]
+            ]            
         );
         $this->add_responsive_control(//action layout
 			'button-layout',
@@ -54,16 +54,16 @@ class AdvanceButton extends EAE_Widget_Base {
 						'title' => esc_html__( 'Bottom',  'wts-eae' ),
 						'icon' => 'eicon-v-align-bottom',
 					],
-
+			
 				],
-				'default' => 'column',
+				'default' => 'column', 
                 'separator'=>'after',
 				'selectors_dictionary' => [
 					'row' => '--eae-ab-dir:row; --eae-ab-sep-row:block; --eae-ab-sep-col:none',
 					'column' => '--eae-ab-dir:column; --eae-ab-sep-row:none; --eae-ab-sep-col:block',
 				],
 				'selectors' => [
-					'{{WRAPPER}}' => '{{VALUE}}',
+					'{{WRAPPER}}' => '{{VALUE}}',	
 				],
 				'toggle' => false
 			]
@@ -72,17 +72,17 @@ class AdvanceButton extends EAE_Widget_Base {
             'content',
             [
                 'label' => esc_html__( 'Content', 'wts-eae' ),
-                'type' => Controls_Manager::HEADING,
+                'type' => Controls_Manager::HEADING,  
             ]
         );
-
+      
         $this->add_control(//button title
             'title',[
 				'label' => esc_html__( 'Title', 'wts-eae' ),
 				'type' => Controls_Manager::TEXT,
 				'placeholder' => esc_html__( 'Enter your title', 'wts-eae' ),
 				'default' => esc_html__( 'WATCH VIDEO', 'wts-eae'),
-
+			
 			]
         );
         $this->add_control(//button  description
@@ -113,7 +113,7 @@ class AdvanceButton extends EAE_Widget_Base {
         $this->add_control(//icon lable
             'icon',[
                 'label'=>esc_html__('Icon','wts-eae'),
-                'type'=>Controls_Manager::HEADING,
+                'type'=>Controls_Manager::HEADING,  
             ]
         );
         $this->add_control(//icon
@@ -188,7 +188,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'return_value' => 'yes',
 				'default' => 'yes',
 			]
-
+			
 		);
         $this->add_responsive_control(//separator type
 			'separator-border-type',
@@ -211,7 +211,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				]
             ]
 		);
-
+        
         $this->add_responsive_control(//separator width
 			'separator-size',
 			[
@@ -222,7 +222,7 @@ class AdvanceButton extends EAE_Widget_Base {
 					'px' => [
 						'min' => 0,
 						'max' => 300,
-
+					
 					],
 					'%' => [
 						'min' => 0,
@@ -242,7 +242,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				],
 			]
 		);
-
+    
 		$this->add_responsive_control(//separator alignment
 			'align',
 			[
@@ -265,7 +265,7 @@ class AdvanceButton extends EAE_Widget_Base {
                 'condition'=>[
                     'button-layout'=>'column',
 						'show_separator' => 'yes'
-
+					
             ],
 				'selectors' => [
 					'{{WRAPPER}} .eae-advance-button-separator-col' => 'align-self: {{VALUE}}',
@@ -282,7 +282,7 @@ class AdvanceButton extends EAE_Widget_Base {
 			[
                 'label'=>esc_html__('General','wts-eae'),
 				'tab'   => Controls_Manager::TAB_STYLE,
-
+		
 			]
 		);
         $this->start_controls_tabs(// start tab
@@ -295,7 +295,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'label' => esc_html__( 'Normal', 'wts-eae' ),
 			]
 		);
-        $this->add_group_control(//button background
+        $this->add_group_control(//button background 
 			Group_Control_Background::get_type(),
 			[
 				'name' => 'background',
@@ -313,8 +313,8 @@ class AdvanceButton extends EAE_Widget_Base {
 					],
 				],
 				'selector' => '{{WRAPPER}} .eae-button',
-
-
+				
+			
 			]
 		);
 		$this->add_group_control(//advance button border
@@ -322,10 +322,10 @@ class AdvanceButton extends EAE_Widget_Base {
 			[
 				'name' => 'advance-button_border',
 				'selector' => '{{WRAPPER}} .eae-button',
-
+					
 			]
 		);
-
+	
         $this->end_controls_tab();
 
         $this->start_controls_tab(//hover tab
@@ -334,7 +334,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'label' => esc_html__( 'Hover', 'wts-eae' ),
 			]
 		);
-        $this->add_group_control(//button background
+        $this->add_group_control(//button background 
 			Group_Control_Background::get_type(),
 			[
 				'name' => 'background_hover',
@@ -342,7 +342,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'types' => [ 'classic', 'gradient' ],
 				'exclude' => [ 'image' ],
 				'selector' => '{{WRAPPER}} .eae-button:hover, {{WRAPPER}} .eae-button:focus',
-
+				
 			]
 		);
 		$this->add_group_control(//advance button border
@@ -350,10 +350,10 @@ class AdvanceButton extends EAE_Widget_Base {
 			[
 				'name' => 'advance-hover-button-border',
 				'selector' => '{{WRAPPER}} .eae-button:hover',
-
+					
 			]
 		);
-
+		
         $this->end_controls_tab();
         $this->end_controls_tabs();
 		$this->add_control(//hover animation
@@ -384,7 +384,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'selectors' => [
 					'{{WRAPPER}} .eae-button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
-
+				
 			]
 		);
 		$this->add_responsive_control(//separator spacing
@@ -408,18 +408,18 @@ class AdvanceButton extends EAE_Widget_Base {
 			[
 				'name' => 'advance-button_shadow',
 				'selector' => '{{WRAPPER}} .eae-button',
-
+				
 			]
 		);
-        $this->end_controls_section();
-
-
+        $this->end_controls_section(); 
+       
+       
         $this->start_controls_section(//style part section of content
 			'advance-button-content',
 			[
                 'label'=>esc_html__('Content','wts-eae'),
 				'tab'   => Controls_Manager::TAB_STYLE,
-
+		
 			]
 		);
 		$this->start_controls_tabs(// start tab
@@ -442,7 +442,7 @@ class AdvanceButton extends EAE_Widget_Base {
 					'selectors' => [
 						'{{WRAPPER}} .eae-advance-button-title ' => 'color: {{VALUE}};',
 					],
-
+					
 				]
 			);
 			$this->add_control(// description style color
@@ -456,7 +456,7 @@ class AdvanceButton extends EAE_Widget_Base {
 					'selectors' => [
 						'{{WRAPPER}} .eae-advance-button-description' => 'color: {{VALUE}};',
 					],
-
+					
 				]
 			);
         $this->end_controls_tab();
@@ -466,31 +466,31 @@ class AdvanceButton extends EAE_Widget_Base {
 			[
 				'label' => esc_html__( 'Hover', 'wts-eae' ),
 			]
-		);
+		);  
 		$this->add_control(//heading style color
 				'heading-hover-color',
 				[
 					'label' => esc_html__( 'Title Color', 'wts-eae'),
 					'type' => Controls_Manager::COLOR,
-
+					
 					'selectors' => [
 						'{{WRAPPER}} .eae-button:hover .eae-advance-button-title ' => 'color: {{VALUE}};',
 					],
-
+					
 				]
 		);$this->add_control(//description style color
 			'description-hover-color',
 			[
 				'label' => esc_html__( 'Description Color', 'wts-eae'),
 				'type' => Controls_Manager::COLOR,
-
+				
 				'selectors' => [
 				'{{WRAPPER}} .eae-button:hover .eae-advance-button-description' => 'color: {{VALUE}};',
-
+					
 				],
 			]
 		);
-
+	
         $this->end_controls_tab();
 
         $this->end_controls_tabs();
@@ -517,9 +517,9 @@ class AdvanceButton extends EAE_Widget_Base {
 			Group_Control_Typography::get_type(),
 			[
 				'name' => 'heading_typography',
-				'selector' => '{{WRAPPER}} .column,
+				'selector' => '{{WRAPPER}} .column, 
 				{{WRAPPER}} .eae-advance-button-title',
-
+				
 			]
 		);
 		$this->add_group_control(//heading shadow
@@ -529,7 +529,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'selector' => '{{WRAPPER}} .eae-advance-button-title',
 			]
 		);
-
+		
         //description .............
 		$this->add_control(//give lable name for  description
 			'description_style',
@@ -539,14 +539,14 @@ class AdvanceButton extends EAE_Widget_Base {
 				'separator' => 'before',
 			]
 		);
-
+	
 		$this->add_group_control(// description style typography
 			Group_Control_Typography::get_type(),
 			[
 				'name' => 'description_typography',
-				'selector' => '{{WRAPPER}} .column,
+				'selector' => '{{WRAPPER}} .column, 
 				{{WRAPPER}} .eae-advance-button-description',
-
+				
 			]
 		);
         $this->add_responsive_control(//description alignment
@@ -575,11 +575,11 @@ class AdvanceButton extends EAE_Widget_Base {
 				'selectors' => [
 					'{{WRAPPER}} .eae-advance-button-description' => 'text-align: {{VALUE}}',
 					'{{WRAPPER}} .eae-advance-button-title' => 'text-align: {{VALUE}}',
-
+						
 				],
 			]
 		);
-
+		
 		$this->end_controls_section();
 
         $this->start_controls_section(//style part section of heading
@@ -587,7 +587,7 @@ class AdvanceButton extends EAE_Widget_Base {
 			[
                 'label'=>esc_html__('Icon','wts-eae'),
 				'tab'   => Controls_Manager::TAB_STYLE,
-
+		
 			]
 		);
 		$this->start_controls_tabs(// start tab
@@ -599,7 +599,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'label' => esc_html__( 'Normal', 'wts-eae' ),
 			]
 		);
-
+		
 		$this->add_control(// icon style color
 			'icon_color',
 			[
@@ -611,15 +611,15 @@ class AdvanceButton extends EAE_Widget_Base {
 				],
 				'condition' => [
 					'view' => 'default',
-
+					
 				],
-
+				
 			]
 		);
 		$this->add_control(//primary_color
 			'primary_color',
 			[
-				'label' => esc_html__( 'Primary Color', 'elementor' ),
+				'label' => esc_html__( 'Primary Color', 'wts-eae' ),
 				'type' => Controls_Manager::COLOR,
 				'default' => '',
 				'condition' => [
@@ -635,7 +635,7 @@ class AdvanceButton extends EAE_Widget_Base {
 		$this->add_control(//secondary color
 			'secondary_color',
 			[
-				'label' => esc_html__( 'Secondary Color', 'elementor' ),
+				'label' => esc_html__( 'Secondary Color', 'wts-eae' ),
 				'type' => Controls_Manager::COLOR,
 				'default' => '',
 				'condition' => [
@@ -648,7 +648,7 @@ class AdvanceButton extends EAE_Widget_Base {
 					],
 			]
 		);
-
+    
         $this->end_controls_tab();
 
         $this->start_controls_tab(//hover tab
@@ -656,8 +656,8 @@ class AdvanceButton extends EAE_Widget_Base {
 			[
 				'label' => esc_html__( 'Hover', 'wts-eae' ),
 			]
-		);
-
+		);  
+		
 			$this->add_control(// icon style color
 				'icon-hover-color',
 				[
@@ -669,15 +669,15 @@ class AdvanceButton extends EAE_Widget_Base {
 					],
 					'condition' => [
 						'view' => 'default',
-
+						
 					],
-
+					
 				]
 			);
 			$this->add_control(//primary_color
 				'primary_hover_color',
 				[
-					'label' => esc_html__( 'Primary Hover Color', 'elementor' ),
+					'label' => esc_html__( 'Primary Hover Color', 'wts-eae' ),
 					'type' => Controls_Manager::COLOR,
 					'default' => '',
 					'condition' => [
@@ -686,13 +686,13 @@ class AdvanceButton extends EAE_Widget_Base {
 					'selectors' => [
 						'{{WRAPPER}} .eae-button:hover .eae-advance-button-title i:before' => 'background: {{VALUE}};',
 							],
-
+	
 				]
 			);
 			$this->add_control(//secondary color
 				'secondary_hover_color',
 				[
-					'label' => esc_html__( 'Secondary Hover Color', 'elementor' ),
+					'label' => esc_html__( 'Secondary Hover Color', 'wts-eae' ),
 					'type' => Controls_Manager::COLOR,
 					'default' => '',
 					'condition' => [
@@ -700,15 +700,15 @@ class AdvanceButton extends EAE_Widget_Base {
 					],
 					'selectors' => [
 						'{{WRAPPER}} .eae-button:hover .eae-advance-button-title i:before' => 'color: {{VALUE}};',
-
+	
 						],
 				]
 			);
-
+	
         $this->end_controls_tab();
 
         $this->end_controls_tabs();
-
+   
 		$this->add_responsive_control(//icon padding
 			'icon_padding',
 			[
@@ -719,7 +719,7 @@ class AdvanceButton extends EAE_Widget_Base {
 					'{{WRAPPER}} .eae-advance-button-title i:before' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
 				'separator'=>'before',
-
+				
 			]
 		);
 		$this->add_responsive_control(//icon size
@@ -736,10 +736,10 @@ class AdvanceButton extends EAE_Widget_Base {
 				'selectors' => [
 					'{{WRAPPER}} .eae-advance-button-title i:before' => 'font-size: {{SIZE}}{{UNIT}};',
 				],
-
+				
 			]
 		);
-
+		
 		$this->add_responsive_control(//icon spacing
 			'icon-content-space',
 			[
@@ -762,7 +762,7 @@ class AdvanceButton extends EAE_Widget_Base {
         $this->add_group_control(//icon border
 			Group_Control_Border::get_type(),
 			[
-				'name'           => 'icon',
+				'name'           => 'icon_border',
 				'fields_options' => [
 					'border' => [
 						'default' => ' ',
@@ -771,7 +771,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'selector' => '{{WRAPPER}} .eae-advance-button-title ::before',
 			]
 		);
-
+	
 		$this->add_control(//icon border redius
 			'icon_radius',
 			[
@@ -779,7 +779,7 @@ class AdvanceButton extends EAE_Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => [ 'px', '%' ],
 				'selectors'  => [
-					'{{WRAPPER}} .eae-advance-button-title i:before' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .eae-advance-button-title i' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 						],
 			]
 		);
@@ -795,8 +795,8 @@ class AdvanceButton extends EAE_Widget_Base {
 				]
 			]
 		);
-
-
+	
+		
 		$this->add_control(// separator style color
 			'advance-separator_color',
 			[
@@ -817,12 +817,12 @@ class AdvanceButton extends EAE_Widget_Base {
 				[
 					'label' => esc_html__( 'Hover Color', 'wts-eae'),
 					'type' => Controls_Manager::COLOR,
-
+					
 					'selectors' => [
 						'{{WRAPPER}} .eae-button:hover .eae-advance-button-separator-col' => 'color: {{VALUE}};',
 					'{{WRAPPER}} .eae-button:hover .eae-advance-button-separator-row' => 'color: {{VALUE}};',
 					],
-
+					
 				]
 		);
 		$this->add_control(//separator weight
@@ -841,35 +841,35 @@ class AdvanceButton extends EAE_Widget_Base {
 					],
 				],
 				'selectors' => [
-
+					
 					'{{WRAPPER}} .eae-advance-button-separator-col' => 'border-width: {{SIZE}}{{UNIT}}',
 					'{{WRAPPER}} .eae-advance-button-separator-row' => 'border-width: {{SIZE}}{{UNIT}}',
-
+				
 				],
 			]
 		);
-
+     
         $this->end_controls_section();
 
     }
 protected function render()
-    {
+    { 
 		  $settings = $this->get_settings_for_display();
             $this->add_render_attribute('wrapper', 'class', ' eae-button');
 			// echo $settings['separator-border-type'];
-
+      
       if ( !empty( $settings['hover_animation'] ) ) {
         $this->add_render_attribute('wrapper', 'class', ' eae-button elementor-animation-' . $settings['hover_animation'] );
          }
          if ( ! empty( $settings['link']['url'] ) ) {
 			$this->add_link_attributes( 'wrapper', $settings['link'] );
 		}
-
+        
 		$this->add_render_attribute('description', 'class', 'eae-advance-button-description');
 		$this->add_inline_editing_attributes( 'description' );
 
 		$this->add_render_attribute('title-wrapper', 'class', 'eae-advance-button-title');
-
+		
 
 		$this->add_render_attribute('title', 'class', 'eae-button-title-text');
 		$this->add_inline_editing_attributes( 'title' );
@@ -877,23 +877,23 @@ protected function render()
 
 
     <div class="eae-advance-button">
-        <a  <?php $this->print_render_attribute_string('wrapper');  ?>>
+        <a  <?php $this->print_render_attribute_string('wrapper');  ?>> 
          <span <?php $this->print_render_attribute_string('title-wrapper'); ?>>
                 <?php Icons_Manager::render_icon( $settings['selected_icon'] );
-                if(!empty($settings['title'])) {
+                if(!empty($settings['title'])) { 
 			      ?>
 				  <span <?php $this->print_render_attribute_string('title'); ?> >
 					<?php $this->print_unescaped_setting('title');  ?>
-				  </span>
-
+				  </span> 				
+				  
 				<?php } ?>
             </span>
 					<?php if(!empty($settings['separator-border-type'])) {?>
             <span class="eae-advance-button-separator-row"></span>
-			<span class="eae-advance-button-separator-col"></span>
+			<span class="eae-advance-button-separator-col"></span> 
 			<?php } ?>
             <span <?php $this->print_render_attribute_string('description'); ?>>
-                 <?php
+                 <?php 
                     if(!empty($settings['description'])){ ?>
 					    <?php
 						    $this->print_unescaped_setting( 'description' );?>

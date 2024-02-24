@@ -4,7 +4,7 @@
  *
  * @package    wsal
  * @subpackage utils
- * @copyright  2022 WP White Security
+ * @copyright  2024 Melapress
  * @license    https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link       https://wordpress.org/plugins/wp-2fa/
  */
@@ -13,7 +13,11 @@ namespace WSAL\Utils;
 
 defined( 'ABSPATH' ) || exit; // Exit if accessed directly.
 
-use \WSAL\Helpers\WP_Helper;
+use WSAL_Ext_MirrorLogger;
+use WSAL\Helpers\WP_Helper;
+use WSAL\Controllers\Connection;
+use WSAL\Helpers\Settings_Helper;
+use WSAL\Controllers\Plugin_Extensions;
 
 /**
  * Migration class
@@ -24,7 +28,8 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 	 * Put all you migration methods here
 	 *
 	 * @package WSAL\Utils
-	 * @since 1.6
+	 *
+	 * @since 4.4.0
 	 */
 	class Migration extends Abstract_Migration {
 
@@ -35,7 +40,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 		 *
 		 * @var string
 		 *
-		 * @since      4.4.2.1
+		 * @since 4.4.2.1
 		 */
 		protected static $version_option_name = WSAL_PREFIX . 'plugin_version';
 
@@ -46,7 +51,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 		 *
 		 * @var string
 		 *
-		 * @since      4.4.2.1
+		 * @since 4.4.2.1
 		 */
 		protected static $const_name_of_plugin_version = 'WSAL_VERSION';
 
@@ -55,7 +60,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 		 *
 		 * @var boolean
 		 *
-		 * @since      4.4.2.1
+		 * @since 4.4.2.1
 		 */
 		protected static $_442_started = false;
 
@@ -65,6 +70,8 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
 		 *
 		 * @return void
+		 *
+		 * @since 4.4.0
 		 */
 		protected static function migrate_up_to_4420() {
 
@@ -80,18 +87,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 
 			$wsal = \WpSecurityAuditLog::get_instance();
 			$wsal::load_freemius();
-			$wsal->load_defaults();
-
-			// Load dependencies.
-			if ( ! isset( $wsal->alerts ) ) {
-				$wsal->alerts = new \WSAL_AlertManager( $wsal );
-			}
-
-			if ( ! isset( $wsal->constants ) ) {
-				$wsal->constants = new \WSAL_ConstantManager();
-			}
-
-			$wsal->sensors = new \WSAL_SensorManager( $wsal );
+			$wsal::load_defaults();
 
 			$disabled_alerts = WP_Helper::get_global_option( 'disabled-alerts', false );
 
@@ -120,7 +116,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 			 *
 			 * @since 3.2.3.3
 			 */
-			if ( ! $wsal->get_global_boolean_setting( 'mwp-child-stealth-mode', false ) ) {
+			if ( ! Settings_Helper::get_boolean_option_value( 'mwp-child-stealth-mode', false ) ) {
 				$wsal->settings()->set_mainwp_child_stealth_mode();
 			}
 
@@ -136,10 +132,10 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 			}
 
 			// Remove 'system' entry from the front-end events array as it was removed along with 404 tracking.
-			$frontend_events = \WSAL_Settings::get_frontend_events();
+			$frontend_events = Settings_Helper::get_frontend_events();
 			if ( array_key_exists( 'system', $frontend_events ) ) {
 				unset( $frontend_events['system'] );
-				\WSAL_Settings::set_frontend_events( $frontend_events );
+				Settings_Helper::set_frontend_events( $frontend_events );
 			}
 
 			// Remove all settings related to 404 tracking.
@@ -165,6 +161,9 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 			// Delete dev options from the settings.
 			WP_Helper::delete_global_option( 'dev-options' );
 
+			// phpcs:disable
+			// phpcs:enable
+
 			if ( class_exists( '\WSAL_Extension_Manager' ) ) {
 				\WSAL_Extension_Manager::include_extension( 'external-db' );
 
@@ -173,7 +172,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 				// This was previously a constant in WSAL_Ext_Plugin, but we removed it in version 4.3.
 				$scheduled_hook_mirroring = 'wsal_run_mirroring';
 
-				$mirrors = \WSAL_Ext_Common::get_config_options_for_group( 'mirror-' );
+				$mirrors = Settings_Helper::get_all_mirrors();
 				if ( ! empty( $mirrors ) ) {
 					foreach ( $mirrors as $mirror ) {
 						// Check if mirror details are valid.
@@ -234,16 +233,16 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 
 			// If AWS SDK is not available and an AWS CLoudWatch connection is present, let's create
 			// a notice to nudge the user.
-			if ( ! class_exists( '\Aws\CloudWatchLogs\CloudWatchLogsClient' ) && ( ! defined( 'WSAL_LOAD_AWS_SDK' ) || ! WSAL_LOAD_AWS_SDK ) ) {
+			if ( ! class_exists( '\Aws\CloudWatchLogs\CloudWatchLogsClient' ) && ( ! defined( 'WSAL_LOAD_AWS_SDK' ) || ! \WSAL_LOAD_AWS_SDK ) ) {
 
-				if ( class_exists( '\WSAL_Ext_Mirrors_AWSCloudWatchConnection' ) ) {
+				if ( class_exists( '\WSAL\Extensions\ExternalDB\Mirrors\WSAL_Ext_Mirrors_AWSCloudWatchConnection' ) ) {
 
 					if ( ! is_null( $wsal->external_db_util ) ) {
-						$connections = $wsal->external_db_util->get_all_connections();
+						$connections = Settings_Helper::get_all_connections();
 						if ( ! empty( $connections ) ) {
 							foreach ( $connections as $connection ) {
-								if ( \WSAL_Ext_Mirrors_AWSCloudWatchConnection::get_type() === $connection['type'] ) {
-									$wsal->set_global_boolean_setting( 'show-aws-sdk-config-nudge-4_3_2', true );
+								if ( \WSAL\Extensions\ExternalDB\Mirrors\WSAL_Ext_Mirrors_AWSCloudWatchConnection::get_type() === $connection['type'] ) {
+									Settings_Helper::set_boolean_option_value( 'show-aws-sdk-config-nudge-4_3_2', true );
 									break;
 								}
 							}
@@ -378,7 +377,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 				foreach ( array( 'archive-connection', 'adapter-connection' ) as $connection_option_name ) {
 					$connection_name = WP_Helper::get_global_option( $connection_option_name, null );
 					if ( ! is_null( $connection_name ) ) {
-						$db_connection = $wsal->external_db_util->get_connection( $connection_name );
+						$db_connection = Connection::load_connection_config( $connection_name );
 						if ( is_array( $db_connection ) && empty( $db_connection['hostname'] ) && empty( $db_connection['db_name'] ) ) {
 							if ( 'adapter-connection' === $connection_option_name ) {
 								$wsal->external_db_util->remove_external_storage_config();
@@ -388,9 +387,11 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 								WP_Helper::delete_global_option( 'archiving-last-created' );
 							}
 
-							// Function WSAL_Ext_Common::delete_connection is not used on purpose because it would try to
-							// trigger an event which would result in error while doing this clean-up.
-							WP_Helper::delete_global_option( WSAL_CONN_PREFIX . $connection_name );
+							if ( defined( 'WSAL_CONN_PREFIX' ) ) {
+								// Function WSAL_Ext_Common::delete_connection is not used on purpose because it would try to
+								// trigger an event which would result in error while doing this clean-up.
+								WP_Helper::delete_global_option( WSAL_CONN_PREFIX . $connection_name );
+							}
 						}
 					}
 				}
@@ -402,7 +403,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 					// Check if SMS notifications or any external mirrors are setup + force plugin to show a notice.
 					$mirrors_in_use = false;
 					if ( ! is_null( $wsal->external_db_util ) ) {
-						$mirrors        = $wsal->external_db_util->get_all_mirrors();
+						$mirrors        = Settings_Helper::get_all_mirrors();
 						$mirrors_in_use = ! empty( $mirrors );
 					}
 
@@ -421,7 +422,7 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 					}
 
 					if ( $notifications_in_use || $mirrors_in_use ) {
-						$wsal->set_global_boolean_setting( 'show-helper-plugin-needed-nudge', true, false );
+						Settings_Helper::set_boolean_option_value( 'show-helper-plugin-needed-nudge', true, false );
 					}
 				}
 			}
@@ -450,74 +451,91 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 
 			\WSAL\Entities\Occurrences_Entity::destroy_connection();
 
-			// If one of the new columns exists there is no need to alter the table.
-			$column_exists = \WSAL\Entities\Occurrences_Entity::check_column(
-				\WSAL\Entities\Occurrences_Entity::get_table_name(),
-				'client_ip',
-				'varchar( 255 )'
-			);
-
-			if ( ! $column_exists ) {
-				$upgrade_sql = \WSAL\Entities\Occurrences_Entity::get_upgrade_query();
-				\WSAL\Entities\Occurrences_Entity::get_connection()->query( $upgrade_sql );
-
-				$connection = WP_Helper::get_global_option( 'adapter-connection' );
-				if ( empty( $connection ) ) {
-					$connection = 'local';
-				}
-
-				// Create a background job to migrate the metadata.
-				$job_info = array(
-					'start_time'             => current_time( 'timestamp' ), // phpcs:ignore
-					'processed_events_count' => 0,
-					'batch_size'             => 50,
-					'connection'             => $connection,
-				);
-
-				// Store the initial info to the db.
-				\WSAL\Migration\Metadata_Migration_440::store_migration_info( $job_info );
-
-				// Create and dispatch the background process itself.
-				$bg_process = new \WSAL\Migration\Metadata_Migration_440( 'external' );
-				$bg_process->push_to_queue( $job_info );
-				$bg_process->save();
-				$bg_process->dispatch();
-			}
-			// Archive is in use.
-			$connection = WP_Helper::get_global_option( 'archive-connection' );
-			if ( ! empty( $connection ) ) {
-				$connection_config = \WSAL_Connector_ConnectorFactory::load_connection_config( $connection );
-
-				\WSAL\Entities\Occurrences_Entity::set_connection(
-                    ( new \WSAL_Connector_MySQLDB( $connection_config ) )->get_connection()
-                );
+			// First check if the table exists, if not then we can execute the migration process.
+			if ( ! \WSAL\Entities\Occurrences_Entity::check_table_exists() ) {
+				\WSAL\Entities\Occurrences_Entity::create_table();
+				// Remove metatdata table if one exists and recreate it.
+				\WSAL\Entities\Metadata_Entity::drop_table();
+				\WSAL\Entities\Metadata_Entity::create_table();
+			} else {
 
 				// If one of the new columns exists there is no need to alter the table.
 				$column_exists = \WSAL\Entities\Occurrences_Entity::check_column(
-                    \WSAL\Entities\Occurrences_Entity::get_table_name(),
-                    'client_ip',
-                    'varchar( 255 )'
+					\WSAL\Entities\Occurrences_Entity::get_table_name(),
+					'client_ip',
+					'varchar( 255 )'
 				);
+
 				if ( ! $column_exists ) {
 					$upgrade_sql = \WSAL\Entities\Occurrences_Entity::get_upgrade_query();
 					\WSAL\Entities\Occurrences_Entity::get_connection()->query( $upgrade_sql );
 
+					$connection = WP_Helper::get_global_option( 'adapter-connection' );
+					if ( empty( $connection ) ) {
+						$connection = 'local';
+					}
+
 					// Create a background job to migrate the metadata.
 					$job_info = array(
-					'start_time'             => current_time( 'timestamp' ), // phpcs:ignore
-					'processed_events_count' => 0,
-					'batch_size'             => 50,
-					'connection'             => $connection,
+						'start_time'             => current_time( 'timestamp' ), // phpcs:ignore
+						'processed_events_count' => 0,
+						'batch_size'             => 50,
+						'connection'             => $connection,
 					);
+
+					// Create and dispatch the background process itself.
+					$bg_process = new \WSAL\Migration\Metadata_Migration_440( $connection );
 
 					// Store the initial info to the db.
 					\WSAL\Migration\Metadata_Migration_440::store_migration_info( $job_info );
-
-					// Create and dispatch the background process itself.
-					$bg_process = new \WSAL\Migration\Metadata_Migration_440( 'archive' );
 					$bg_process->push_to_queue( $job_info );
 					$bg_process->save();
 					$bg_process->dispatch();
+				}
+			}
+
+			// Archive is in use.
+			$connection = WP_Helper::get_global_option( 'archive-connection' );
+			if ( ! empty( $connection ) ) {
+				\WSAL\Entities\Occurrences_Entity::set_connection(
+					Connection::get_connection( $connection )
+				);
+
+				// First check if the table exists, if not then we can execute the migration process.
+				if ( ! \WSAL\Entities\Occurrences_Entity::check_table_exists() ) {
+					\WSAL\Entities\Occurrences_Entity::create_table();
+					// Remove metatdata table if one exists and recreate it.
+					\WSAL\Entities\Metadata_Entity::drop_table();
+					\WSAL\Entities\Metadata_Entity::create_table();
+				} else {
+
+					// If one of the new columns exists there is no need to alter the table.
+					$column_exists = \WSAL\Entities\Occurrences_Entity::check_column(
+						\WSAL\Entities\Occurrences_Entity::get_table_name(),
+						'client_ip',
+						'varchar( 255 )'
+					);
+					if ( ! $column_exists ) {
+						$upgrade_sql = \WSAL\Entities\Occurrences_Entity::get_upgrade_query();
+						\WSAL\Entities\Occurrences_Entity::get_connection()->query( $upgrade_sql );
+
+						// Create a background job to migrate the metadata.
+						$job_info = array(
+						'start_time'             => current_time( 'timestamp' ), // phpcs:ignore
+						'processed_events_count' => 0,
+						'batch_size'             => 50,
+						'connection'             => $connection,
+						);
+
+						// Create and dispatch the background process itself.
+						$bg_process = new \WSAL\Migration\Metadata_Migration_440( 'archive' );
+
+						// Store the initial info to the db.
+						\WSAL\Migration\Metadata_Migration_440::store_migration_info( $job_info );
+						$bg_process->push_to_queue( $job_info );
+						$bg_process->save();
+						$bg_process->dispatch();
+					}
 				}
 			}
 		}
@@ -528,6 +546,8 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
 		 *
 		 * @return void
+		 *
+		 * @since 4.4.2.1
 		 */
 		protected static function migrate_up_to_4421() {
 			\WSAL\Helpers\WP_Helper::delete_global_option( 'migration-started' );
@@ -566,6 +586,139 @@ if ( ! class_exists( '\WSAL\Utils\Migration' ) ) {
 					}
 				}
 			}
+		}
+
+		/**
+		 * Migration for version upto 4.4.3
+		 *
+		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
+		 *
+		 * @return void
+		 *
+		 * @since 4.4.3
+		 */
+		protected static function migrate_up_to_4430() {
+
+			// phpcs:disable
+			// phpcs:enable
+
+			if ( class_exists( 'WSAL_Ext_MirrorLogger' ) && method_exists( '\WSAL\Helpers\Settings_Helper', 'get_working_dir_path_static' ) ) {
+
+				$working_dir_path = Settings_Helper::get_working_dir_path_static();
+
+				if ( file_exists( $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.json' ) ) {
+					rename( $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.json', $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.php' );
+
+					$line = fgets(
+						fopen( $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.php', 'r' )
+					);
+					if ( false === strpos( $line, '<?php' ) ) {
+						$fp_source = fopen( $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.php', 'r' );
+						$fp_dest   = fopen( $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.php.tmp', 'w' ); // better to generate a real temp filename.
+						fwrite( $fp_dest, '<?php' . "\n" );
+						while ( ! feof( $fp_source ) ) {
+							fwrite( $fp_dest, fread( $fp_source, 8192 ) );
+						}
+						fclose( $fp_source );
+						fclose( $fp_dest );
+						unlink( $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.php' );
+						rename( $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.php.tmp', $working_dir_path . WSAL_Ext_MirrorLogger::FILE_NAME_FAILED_LOGS . '.php' );
+					}
+				}
+			}
+		}
+
+		/**
+		 * Migration for version upto 4.5.0
+		 *
+		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
+		 *
+		 * @return void
+		 *
+		 * @since 4.5.0
+		 */
+		protected static function migrate_up_to_4500() {
+			\WSAL\Entities\Metadata_Entity::create_indexes();
+			\WSAL\Entities\Occurrences_Entity::create_indexes();
+		}
+
+		/**
+		 * Migration for version upto 4.5.2
+		 *
+		 * Converts excluded users to array
+		 *
+		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
+		 *
+		 * @return void
+		 *
+		 * @since 4.5.2
+		 */
+		protected static function migrate_up_to_4520() {
+			$excluded_users = Settings_Helper::get_option_value( 'excluded-users', array() );
+			if ( is_string( $excluded_users ) ) {
+				$excluded_users = array_unique( array_filter( explode( ',', $excluded_users ) ) );
+				Settings_Helper::set_option_value( 'excluded-users', $excluded_users );
+			}
+			$excluded_roles = Settings_Helper::get_option_value( 'excluded-roles', array() );
+			if ( is_string( $excluded_roles ) ) {
+				$excluded_roles = array_unique( array_filter( explode( ',', $excluded_roles ) ) );
+				Settings_Helper::set_option_value( 'excluded-roles', $excluded_roles );
+			}
+		}
+
+		/**
+		 * Migration for version upto 4.6.0
+		 *
+		 * Removes some redundant options
+		 *
+		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
+		 *
+		 * @return void
+		 *
+		 * @since 4.6.0
+		 */
+		protected static function migrate_up_to_4600() {
+			WP_Helper::delete_global_option( 'wsal_version' );
+			WP_Helper::delete_global_option( 'disable-refresh' );
+			Plugin_Extensions::deactivate_plugins();
+			WP_Helper::set_global_option( 'extensions-merged-notice', true );
+			// phpcs:disable
+			/* @free:start */
+			// phpcs:enable
+			WP_Helper::set_global_option( 'free-search-try', true );
+			// phpcs:disable
+			/* @free:end */
+			// phpcs:enable
+		}
+
+		/**
+		 * Migration for version upto 4.6.1
+		 *
+		 * Removes some redundant options
+		 *
+		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
+		 *
+		 * @return void
+		 *
+		 * @since 4.6.1
+		 */
+		protected static function migrate_up_to_4610() {
+			WP_Helper::delete_global_option( 'events-nav-type' );
+		}
+
+		/**
+		 * Migration for version upto 5.0.0
+		 *
+		 * Removes some redundant options
+		 *
+		 * Note: The migration methods need to be in line with the @see WSAL\Utils\Abstract_Migration::$pad_length
+		 *
+		 * @return void
+		 *
+		 * @since 5.0.0
+		 */
+		protected static function migrate_up_to_5000() {
+			self::migrate_up_to_4610();
 		}
 	}
 }

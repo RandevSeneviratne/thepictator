@@ -6,6 +6,8 @@
  * @subpackage wsal-gravity-forms
  */
 
+use WSAL\Helpers\Classes_Helper;
+
 add_filter( 'wsal_event_objects', 'wsal_gravityforms_add_custom_event_objects', 10, 2 );
 add_filter( 'wsal_event_type_data', 'wsal_gravityforms_add_custom_event_type', 10, 2 );
 add_filter( 'wsal_togglealerts_sub_category_events', 'wsal_gravityforms_extension_togglealerts_sub_category_events' );
@@ -51,11 +53,12 @@ function append_content_to_toggle( $alert_id ) {
 		$frontend_events     = WSAL_Settings::get_frontend_events();
 		$enable_for_visitors = ( isset( $frontend_events['gravityforms'] ) && $frontend_events['gravityforms'] ) ? true : false;
 		?>
-	<tr><td></td>
-	<td>
-	<input name="frontend-events[gravityforms]" type="checkbox" id="frontend-events[woocommerce]" value="1" <?php checked( $enable_for_visitors ); ?> />
-	</td>
-	<td colspan="2"><?php esc_html_e( 'Keep a log when website visitors submits a form (by default the plugin only keeps a log when logged in users submit a form).', 'wsal-gravity-forms' ); ?></td>
+	<tr class="alert-wrapper" data-alert-cat="Gravity Forms" data-alert-subcat="Monitor Gravity Forms" data-is-attached-to-alert="5709">
+		<td></td>
+		<td>
+		<input name="frontend-events[gravityforms]" type="checkbox" id="frontend-events[woocommerce]" value="1" <?php checked( $enable_for_visitors ); ?> />
+		</td>
+		<td colspan="2"><?php esc_html_e( 'Keep a log when website visitors submits a form (by default the plugin only keeps a log when logged in users submit a form).', 'wsal-gravity-forms' ); ?></td>
 	</tr>
 		<?php
 	}
@@ -171,3 +174,24 @@ function wsal_gravityforms_extension_replacement_duplicate_event_notice() {
 	</script>
 	<?php
 }
+
+add_action(
+	'wsal_sensors_manager_add',
+	/**
+	* Adds sensors classes to the Class Helper
+	*
+	* @return void
+	*
+	* @since latest
+	*/
+	function () {
+		require_once __DIR__ . '/../wp-security-audit-log/sensors/class-gravity-forms-sensor.php';
+
+		Classes_Helper::add_to_class_map(
+			array(
+				'WSAL\\Plugin_Sensors\\Gravity_Forms_Sensor' => __DIR__ . '/../wp-security-audit-log/sensors/class-gravity-forms-sensor.php',
+			)
+		);
+	}
+);
+

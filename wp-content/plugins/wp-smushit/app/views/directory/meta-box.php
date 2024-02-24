@@ -10,7 +10,6 @@
  *
  * @var Smush\App\Pages\Directory $this  Dashboard page.
  */
-
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
@@ -31,6 +30,7 @@ if ( ! defined( 'WPINC' ) ) {
 	</div>
 	<!-- Notices -->
 	<?php $this->smush_result_notice(); ?>
+	<?php if ( ! WP_Smush::is_pro() ) : ?>
 	<div class="sui-notice sui-notice-info wp-smush-dir-limit sui-hidden">
 		<div class="sui-notice-content">
 			<div class="sui-notice-message">
@@ -42,13 +42,14 @@ if ( ! defined( 'WPINC' ) ) {
 						esc_html__( '%1$sUpgrade to pro%2$s to bulk smush all your directory images with one click. Free users can smush %3$d images with each click.', 'wp-smushit' ),
 						'<a href="' . esc_url( $upgrade_url ) . '" target="_blank" title="' . esc_html__( 'Smush Pro', 'wp-smushit' ) . '">',
 						'</a>',
-						absint( \Smush\Core\Core::$max_free_bulk )
+						absint( \Smush\Core\Core::MAX_FREE_BULK )
 					);
 					?>
 				</p>
 			</div>
 		</div>
 	</div>
+	<?php endif; ?>
 
 	<?php if ( ! empty( $images ) ) : ?>
 		<div class="smush-final-log">

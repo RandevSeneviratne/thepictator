@@ -191,11 +191,13 @@ if ( isset( $get_form_options['form-wrapper'] ) ) { ?>
 		if ( ! isset( $get_form_options['text-fields']['border-size'] ) ) {
 			echo 'border-width: 1px;';
 		}
+	
 		?>
+
 		<?php echo empty( $get_form_options['text-fields']['background-color'] ) ? '' : 'background:'. $get_form_options['text-fields']['background-color'].';'; ?>
 		<?php echo ! isset( $get_form_options['text-fields']['border-size'] ) ? '' : 'border-width:'. $get_form_options['text-fields']['border-size'].$main_class_object->gf_stla_add_px_to_value( $get_form_options['text-fields']['border-size'] ).';'; ?>
 		<?php echo empty( $get_form_options['text-fields']['border-color'] ) ? '' : 'border-color:'. $get_form_options['text-fields']['border-color'].';'; ?>
-		<?php echo empty( $get_form_options['text-fields']['border-type'] ) ? '' : 'border-style:'. $get_form_options['text-fields']['border-type'].';'; ?>
+		<?php echo empty( $get_form_options['text-fields']['border-type'] ) ? 'border-style: solid;' : 'border-style:'. $get_form_options['text-fields']['border-type'].';'; ?>
 		<?php echo empty( $get_form_options['text-fields']['font-size'] ) ? '' : 'font-size:'. $get_form_options['text-fields']['font-size'].$main_class_object->gf_stla_add_px_to_value( $get_form_options['text-fields']['font-size'] ).';'; ?>
 		<?php echo empty( $get_form_options['text-fields']['font-color'] ) ? '' : 'color:'. $get_form_options['text-fields']['font-color'].';'; ?>
 		<?php

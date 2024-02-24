@@ -6,6 +6,8 @@
  * @subpackage views
  */
 
+use WSAL\Helpers\Settings_Helper;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -26,13 +28,6 @@ abstract class WSAL_AbstractView {
 	 * @var WpSecurityAuditLog
 	 */
 	protected $plugin;
-
-	/**
-	 * WordPress version.
-	 *
-	 * @var string
-	 */
-	protected $wp_version;
 
 	/**
 	 * Contains the result to a call to add_submenu_page().
@@ -63,13 +58,6 @@ abstract class WSAL_AbstractView {
 	public function __construct( WpSecurityAuditLog $plugin ) {
 		$this->plugin = $plugin;
 
-		// Get and store WordPress version.
-		global $wp_version;
-		if ( ! isset( $wp_version ) ) {
-			$wp_version = get_bloginfo( 'version' ); // phpcs:ignore
-		}
-		$this->wp_version = floatval( $wp_version );
-
 		// Handle admin notices.
 		add_action( 'wp_ajax_AjaxDismissNotice', array( $this, 'ajax_dismiss_notice' ) );
 	}
@@ -80,7 +68,7 @@ abstract class WSAL_AbstractView {
 	 * @internal
 	 */
 	public function ajax_dismiss_notice() {
-		if ( ! $this->plugin->settings()->current_user_can( 'view' ) ) {
+		if ( ! Settings_Helper::current_user_can( 'view' ) ) {
 			die( 'Access Denied.' );
 		}
 
@@ -165,7 +153,7 @@ abstract class WSAL_AbstractView {
 	abstract public function render();
 
 	/**
-	 * Renders the view icon (this has been deprecated in newwer WP versions).
+	 * Renders the view icon (this has been deprecated in newer WP versions).
 	 */
 	public function render_icon() {
 		?>
@@ -219,16 +207,6 @@ abstract class WSAL_AbstractView {
 	}
 
 	/**
-	 * Used for rendering stuff into head tag.
-	 */
-	public function header() {}
-
-	/**
-	 * Used for rendering stuff in page footer.
-	 */
-	public function footer() {}
-
-	/**
 	 * Method: Safe view menu name.
 	 *
 	 * @return string
@@ -264,5 +242,4 @@ abstract class WSAL_AbstractView {
 	public function get_view_name() {
 		return strtolower( str_replace( array( 'WSAL_Views_', 'WSAL_' ), '', get_class( $this ) ) );
 	}
-
 }

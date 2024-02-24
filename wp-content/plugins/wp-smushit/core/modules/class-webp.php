@@ -10,6 +10,7 @@ namespace Smush\Core\Modules;
 
 use Smush\Core\Core;
 use Smush\Core\Helper;
+use Smush\Core\Stats\Global_Stats;
 use WP_Error;
 use WP_Smush;
 
@@ -54,7 +55,7 @@ class WebP extends Abstract_Module {
 		// Only apply filters for PRO + activated Webp.
 		if ( $this->is_active() ) {
 			// Add a filter to check if the image should resmush.
-			add_filter( 'wp_smush_should_resmush', array( $this, 'should_resmush' ), 10, 2 );
+			//add_filter( 'wp_smush_should_resmush', array( $this, 'should_resmush' ), 10, 2 );
 		}
 	}
 
@@ -167,7 +168,7 @@ class WebP extends Abstract_Module {
 
 		// Add support for basic auth in WPMU DEV staging.
 		if ( isset( $_SERVER['WPMUDEV_HOSTING_ENV'] ) && 'staging' === $_SERVER['WPMUDEV_HOSTING_ENV'] && isset( $_SERVER['PHP_AUTH_USER'] ) ) {
-			$args['headers']['Authorization'] = 'Basic ' . base64_encode( $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'] );
+			$args['headers']['Authorization'] = 'Basic ' . base64_encode( wp_unslash( $_SERVER['PHP_AUTH_USER'] ) . ':' . wp_unslash( $_SERVER['PHP_AUTH_PW'] ) );
 		}
 
 		$response = wp_remote_get( $test_image, $args );
@@ -331,7 +332,7 @@ class WebP extends Abstract_Module {
 		if ( 0 === strpos( $upload['basedir'], ABSPATH ) ) {
 			// Environments like Flywheel have an ABSPATH that's not used in the paths.
 			$root_path_base = ABSPATH;
-		} elseif ( ! empty( $_SERVER['DOCUMENT_ROOT'] ) && 0 === strpos( $upload['basedir'], $_SERVER['DOCUMENT_ROOT'] ) ) {
+		} elseif ( ! empty( $_SERVER['DOCUMENT_ROOT'] ) && 0 === strpos( $upload['basedir'], wp_unslash( $_SERVER['DOCUMENT_ROOT'] ) ) ) {
 			/**
 			 * This gets called when scanning for uncompressed images.
 			 * When ran from certain contexts, $_SERVER['DOCUMENT_ROOT'] might not be set.
@@ -719,7 +720,9 @@ class WebP extends Abstract_Module {
 		}
 
 		// Show only when there are images in the library, except on mu, where the count is always 0.
-		if ( ! is_multisite() && 0 === WP_Smush::get_instance()->core()->total_count ) {
+		$core         = WP_Smush::get_instance()->core();
+		$global_stats = $core->get_global_stats();
+		if ( ! is_multisite() && empty( $global_stats['count_total'] ) ) {
 			return;
 		}
 

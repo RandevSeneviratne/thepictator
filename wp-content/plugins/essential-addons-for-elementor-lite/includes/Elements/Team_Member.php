@@ -76,6 +76,9 @@ class Team_Member extends Widget_Base {
 				'default' => [
 					'url' => Utils::get_placeholder_image_src(),
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -111,6 +114,9 @@ class Team_Member extends Widget_Base {
                     'active' => true,
                 ],
 				'default' => esc_html__( 'John Doe', 'essential-addons-for-elementor-lite'),
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -123,6 +129,9 @@ class Team_Member extends Widget_Base {
                     'active' => true,
                 ],
 				'default' => esc_html__( 'Software Engineer', 'essential-addons-for-elementor-lite'),
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -327,10 +336,6 @@ class Team_Member extends Widget_Base {
 						'min'	=> 0,
 						'max'	=> 200
 					]
-				],
-				'default'	=> [
-					'unit'	=> 'px',
-					'size'	=> 'auto'
 				],
 				'selectors' => [
 					'{{WRAPPER}} .eael-team-item .eael-team-content' => 'min-height: {{SIZE}}{{UNIT}};',
@@ -938,7 +943,7 @@ class Team_Member extends Widget_Base {
 										<a <?php $this->print_render_attribute_string( 'social_link_' . $index ); ?>>
 											<?php if ($icon_is_new || $icon_migrated) { ?>
 												<?php if( isset( $item['social_new']['value']['url'] ) ) : ?>
-													<img src="<?php echo esc_attr($item['social_new']['value']['url'] ); ?>" alt="<?php echo esc_attr(get_post_meta($item['social_new']['value']['id'], '_wp_attachment_image_alt', true)); ?>" />
+													<img src="<?php echo esc_url( $item['social_new']['value']['url'] ); ?>" alt="<?php echo esc_attr(get_post_meta($item['social_new']['value']['id'], '_wp_attachment_image_alt', true)); ?>" />
 												<?php else :
                                                     \Elementor\Icons_Manager::render_icon( $item['social_new'], [ 'aria-hidden' => 'true' ] );
                                                 endif; ?>

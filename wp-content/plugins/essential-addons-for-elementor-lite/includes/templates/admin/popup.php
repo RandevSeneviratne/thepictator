@@ -3,7 +3,7 @@
         <div class="eael-modal">
             <div class="modal__body">
                 <a href="#" id="eael-admin-popup-close" class="modal__close eael-admin-popup-close"><i
-                            class="ea-admin-icon icon-times"></i></a>
+                            class="ea-admin-icon eael-icon-times"></i></a>
                 <div id="eael-pro-popup" class="modal__content modal__content__popup">
                     <div class="modal__card">
                         <div class="icon">
@@ -30,7 +30,42 @@
                                    value="<?php echo esc_attr( get_option( 'eael_save_google_map_api' ) ); ?>" type="text"
                                    class="eael-form__control" placeholder="Set API key">
                             <button type="button" class="eael-button button__themeColor eael-save-trigger eael-admin-popup-close"><i
-                                        class="ea-admin-icon icon-long-arrow-right"></i></button>
+                                        class="ea-admin-icon eael-icon-long-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="eael-business-reviews-popup" class="modal__content__popup">
+                    <div class="modal__head">
+                        <p><?php _e( 'Business Reviews Settings', 'essential-addons-for-elementor-lite' ); ?></p>
+                    </div>
+
+                    <div class="modal__content">
+                        <div class="eael-business_reviews__setup">
+                            <span class="business_reviews__setup__header">
+                                <img src="<?php echo esc_url( EAEL_PLUGIN_URL . 'assets/admin/images/google.svg' ); ?>"
+                                        alt="">
+                                <?php _e( 'Google Reviews', 'essential-addons-for-elementor-lite' ); ?>
+                            </span>
+                            <div class="eael-input__inline">
+                                <label><?php _e( 'Google Place API Key:', 'essential-addons-for-elementor-lite' ); ?></label>
+                                <input name="br_google_place_api_key" id="br_google_place_api_key"
+                                        value="<?php echo esc_attr( get_option( 'eael_br_google_place_api_key' ) ); ?>"
+                                        class="eael-form__control" type="text" placeholder="Google Place API Key">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal__content">
+                        <div class="eael__flex align__center justify__center">
+                            <button class="eael-button button__themeColor mr15 eael-save-trigger eael-admin-popup-close">
+                                <?php _e( 'Save', 'essential-addons-for-elementor-lite' ); ?>
+                            </button>
+                            <button class="eael-button button__white eael-admin-popup-close"><?php _e( 'Cancel', 'essential-addons-for-elementor-lite' ); ?></button>
+                        </div>
+                        <div class="config__api mt15">
+                            <a target="_blank" href="https://developers.google.com/maps/documentation/places/web-service/get-api-key"
+                               class="config__api"> <?php _e( 'To configure the API Keys, check out this doc', 'essential-addons-for-elementor-lite' ); ?></a>
                         </div>
                     </div>
                 </div>
@@ -47,7 +82,7 @@
                                    value="<?php echo esc_attr( get_option( 'eael_save_mailchimp_api' ) ); ?>"
                                    placeholder="Set API key">
                             <button class="eael-button button__themeColor eael-save-trigger eael-admin-popup-close"><i
-                                        class="ea-admin-icon icon-long-arrow-right"></i></button>
+                                        class="ea-admin-icon eael-icon-long-arrow-right"></i></button>
                         </div>
 
                     </div>
@@ -187,6 +222,41 @@
 
                     <div class="border__line"><span></span></div>
 
+                    <div class="eael-element__wrap eael-d-block eael-element__wrap-popup">
+                        <div class="eael-element__item">
+                            <div class="element__content">
+                                <h4><?php esc_html_e( 'Enable Custom Fields', 'essential-addons-for-elementor-lite' ); ?></h4>
+                                <div class="element__options">
+                                    <p class="element__icon">
+                                        <i class="eicon-info login-register-info-icon"></i>
+                                        <span class="tooltip-text"><?php esc_attr_e('Fields will be available on both the edit profile page and the EA Login | Register Form.', 'essential-addons-for-elementor-lite') ?></span>
+                                    </p>
+                                    <label class="eael-switch">
+                                        <input name="lr_custom_profile_fields" id="lr_custom_profile_fields" <?php if( 'on' === get_option( 'eael_custom_profile_fields' ) ) : ?> checked <?php endif; ?> class="eael-form__control eael-elements-list" type="checkbox">  <span class="switch__box "></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php $custom_field_wrap_class = 'on' !== get_option( 'eael_custom_profile_fields' ) ? 'eael-d-none' : ''; ?>
+                    <div class="lr_custom_profile_fields_child modal__content1 ml30 mr30 mt15 <?php echo esc_attr($custom_field_wrap_class); ?>">
+                        <div class="eael-login__setup">
+                            <div class="eael-input__inline mb15">
+                                <label><i class="eicon-plus-circle-o mr10"></i><?php _e( 'Text Type Fields:', 'essential-addons-for-elementor-lite' ); ?></label>
+                                <input name="lr_custom_profile_fields_text" id="lr_custom_profile_fields_text"
+                                        value="<?php echo esc_attr( get_option( 'eael_custom_profile_fields_text' ) ); ?>"
+                                        class="eael-form__control" type="text" placeholder="Field 1, Field 2 ...">
+                            </div>
+                            <div class="eael-input__inline mb15">
+                                <label><i class="eicon-plus-circle-o mr10"></i><?php _e( 'File Type Fields:', 'essential-addons-for-elementor-lite' ); ?></label>
+                                <input name="lr_custom_profile_fields_img" id="lr_custom_profile_fields_img"
+                                        value="<?php echo esc_attr( get_option( 'eael_custom_profile_fields_img' ) ); ?>"
+                                        class="eael-form__control" type="text" placeholder="Field 1, Field 2 ...">
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- <div class="border__line"><span></span></div> -->
                     <div class="modal__content">
                         <div class="eael__flex align__center justify__center">

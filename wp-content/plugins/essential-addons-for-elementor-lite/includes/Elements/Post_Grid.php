@@ -12,7 +12,7 @@ use \Elementor\Controls_Manager;
 use \Elementor\Group_Control_Border;
 use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Typography;
-use \Elementor\Core\Schemes\Typography;
+use \Elementor\Core\Kits\Documents\Tabs\Global_Typography;
 use \Elementor\Widget_Base;
 use Essential_Addons_Elementor\Classes\Helper as HelperClass;
 use Essential_Addons_Elementor\Traits\Helper;
@@ -20,6 +20,9 @@ use Essential_Addons_Elementor\Traits\Helper;
 class Post_Grid extends Widget_Base
 {
     use Helper;
+
+	protected $page_id;
+
     public function get_name()
     {
         return 'eael-post-grid';
@@ -390,7 +393,9 @@ class Post_Grid extends Widget_Base
             [
                 'name' => 'eael_post_grid_meta_date_typography',
                 'label' => __('Typography', 'essential-addons-for-elementor-lite'),
-                'scheme' => Typography::TYPOGRAPHY_3,
+                'global' => [
+	                'default' => Global_Typography::TYPOGRAPHY_TEXT
+                ],
                 'selector' => '{{WRAPPER}} .eael-meta-posted-on',
             ]
         );
@@ -470,6 +475,7 @@ class Post_Grid extends Widget_Base
                 'default' => '',
                 'selectors' => [
                     '{{WRAPPER}} .eael-entry-meta .eael-posted-on' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .eael-post-grid-style-two .eael-entry-meta .eael-meta-posted-on' => 'color: {{VALUE}};',
                 ],
                 'condition' => [
 	                'eael_show_date' => 'yes',
@@ -498,7 +504,8 @@ class Post_Grid extends Widget_Base
                 ],
                 'default' => 'flex-start',
                 'selectors' => [
-                    '{{WRAPPER}} .eael-grid-post .eael-entry-footer, {{WRAPPER}} .eael-grid-post .eael-entry-meta' => 'justify-content: {{VALUE}}',
+                    '{{WRAPPER}} .eael-grid-post .eael-entry-footer' => 'justify-content: {{VALUE}};',
+                    '{{WRAPPER}} .eael-grid-post .eael-entry-header-after' => 'justify-content: {{VALUE}}; align-items: center;',
                 ],
             ]
         );
@@ -508,7 +515,9 @@ class Post_Grid extends Widget_Base
             [
                 'name' => 'eael_post_grid_meta_typography',
                 'label' => __('Typography', 'essential-addons-for-elementor-lite'),
-                'scheme' => Typography::TYPOGRAPHY_3,
+                'global' => [
+	                'default' => Global_Typography::TYPOGRAPHY_TEXT
+                ],
                 'selector' => '{{WRAPPER}} .eael-entry-meta > span',
                 'condition' => [
                     'meta_position' => 'meta-entry-footer',
@@ -520,7 +529,9 @@ class Post_Grid extends Widget_Base
             [
                 'name' => 'eael_post_grid_meta_header_typography',
                 'label' => __('Typography', 'essential-addons-for-elementor-lite'),
-                'scheme' => Typography::TYPOGRAPHY_3,
+                'global' => [
+	                'default' => Global_Typography::TYPOGRAPHY_TEXT
+                ],
                 'selector' => '{{WRAPPER}} .eael-entry-meta > span',
                 'condition' => [
                     'meta_position' => 'meta-entry-header',
@@ -535,7 +546,7 @@ class Post_Grid extends Widget_Base
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
-                    '{{WRAPPER}} .eael-entry-meta' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                    '{{WRAPPER}} .eael-entry-header-after' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 ],
                 'condition' => [
                     'meta_position' => 'meta-entry-header',
@@ -551,6 +562,7 @@ class Post_Grid extends Widget_Base
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
                     '{{WRAPPER}} .eael-entry-footer' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                    '{{WRAPPER}} .eael-entry-header-after' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 ],
                 'condition' => [
                     'meta_position' => 'meta-entry-footer',
@@ -578,11 +590,10 @@ class Post_Grid extends Widget_Base
             $this,
             'eael_meta_header_',
             __('Meta Position', 'essential-addons-for-elementor-lite'),
-            '.eael-grid-post .eael-entry-meta',
+            '.eael-grid-post .eael-entry-header-after',
             [
                 'eael_show_meta' => 'yes',
                 'meta_position' => ['meta-entry-header'],
-                'eael_post_grid_preset_style!' => 'three',
             ]
         );
 
@@ -662,7 +673,9 @@ class Post_Grid extends Widget_Base
             [
                 'name' => 'eael_post_grid_title_typography',
                 'label' => __('Typography', 'essential-addons-for-elementor-lite'),
-                'scheme' => Typography::TYPOGRAPHY_1,
+                'global' => [
+	                'default' => Global_Typography::TYPOGRAPHY_PRIMARY
+                ],
                 'selector' => '{{WRAPPER}} .eael-entry-title, {{WRAPPER}} .eael-entry-title a',
             ]
         );
@@ -734,7 +747,9 @@ class Post_Grid extends Widget_Base
             [
                 'name' => 'eael_post_grid_excerpt_typography',
                 'label' => __('Excerpt Typography', 'essential-addons-for-elementor-lite'),
-                'scheme' => Typography::TYPOGRAPHY_3,
+                'global' => [
+	                'default' => Global_Typography::TYPOGRAPHY_TEXT
+                ],
                 'selector' => '{{WRAPPER}} .eael-grid-post-excerpt p',
             ]
         );
@@ -826,7 +841,9 @@ class Post_Grid extends Widget_Base
             [
                 'name' => 'eael_post_grid_terms_typography',
                 'label' => __('Meta Typography', 'essential-addons-for-elementor-lite'),
-                'scheme' => Typography::TYPOGRAPHY_3,
+                'global' => [
+	                'default' => Global_Typography::TYPOGRAPHY_TEXT
+                ],
                 'selector' => '{{WRAPPER}} .post-meta-categories li, {{WRAPPER}} .post-meta-categories li a',
             ]
         );
@@ -1042,7 +1059,7 @@ class Post_Grid extends Widget_Base
         $args = HelperClass::get_dynamic_args($settings, $args);
 
 	    if ( ! in_array( $settings['post_type'], [ 'post', 'page', 'product', 'by_id', 'source_dynamic' ] ) ) {
-		    $settings['eael_post_terms'] = $settings["eael_{$settings['post_type']}_terms"];
+		    $settings['eael_post_terms'] = empty( $settings["eael_{$settings['post_type']}_terms"] ) ? '' : $settings["eael_{$settings['post_type']}_terms"];
 	    } elseif ( $settings['post_type'] === 'product' ) {
 		    $settings['eael_post_terms'] = $settings['eael_post_terms'] === 'category' ? 'product_cat' : ( $settings['eael_post_terms'] === 'tags' ? 'product_tag' : $settings['eael_post_terms'] );
 	    }
@@ -1079,13 +1096,18 @@ class Post_Grid extends Widget_Base
         );
 
         echo '<div ' . $this->get_render_attribute_string( 'post_grid_wrapper' ) . '>
-            <div ' . $this->get_render_attribute_string( 'post_grid_container' ) . ' data-layout-mode="' . $settings["layout_mode"] . '">';
+            <div ' . $this->get_render_attribute_string( 'post_grid_container' ) . ' data-layout-mode="' . esc_attr( $settings["layout_mode"] ) . '">';
 
         $template = $this->get_template($settings['eael_dynamic_template_Layout']);
         $settings['loadable_file_name'] = $this->get_filename_only($template);
 	    $dir_name = $this->get_temp_dir_name($settings['loadable_file_name']);
 	    $found_posts = 0;
         $posts_per_page = isset($args['posts_per_page']) && $args['posts_per_page'] > 0 ? $args['posts_per_page'] : -1 ;
+
+        set_transient( 'eael_post_grid_read_more_button_text_'. $this->get_id(), $this->get_settings_for_display('read_more_button_text'), DAY_IN_SECONDS );
+        set_transient( 'eael_post_grid_excerpt_expanison_indicator_'. $this->get_id(), $this->get_settings_for_display('excerpt_expanison_indicator'), DAY_IN_SECONDS );
+        $settings['read_more_button_text'] = $this->get_settings_for_display('read_more_button_text');
+        $settings['excerpt_expanison_indicator'] = $this->get_settings_for_display('excerpt_expanison_indicator');
 
         if(file_exists($template)){
             $query = new \WP_Query( $args );

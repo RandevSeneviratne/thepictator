@@ -1028,9 +1028,7 @@ abstract class Skin_Base extends Elementor_Skin_Base {
 				'selectors' => [
 					'{{WRAPPER}} .eae-layout-center .eae-timline-progress-bar' => 'width: {{SIZE}}{{UNIT}}; left: calc(50% - {{SIZE}}{{UNIT}}/2);',
 					'{{WRAPPER}} .eae-layout-left .eae-timline-progress-bar'   => 'width: {{SIZE}}{{UNIT}};',
-					// left: calc(10px + {{SIZE}}{{UNIT}}/2);',
 					'{{WRAPPER}} .eae-layout-right .eae-timline-progress-bar'  => 'width: {{SIZE}}{{UNIT}};',
-					//left: calc(100% - 13px - {{SIZE}}{{UNIT}}/2);',
 				],
 			]
 		);
@@ -1339,13 +1337,15 @@ abstract class Skin_Base extends Elementor_Skin_Base {
 			?>
 			<?php
 			$this->parent->add_render_attribute( $item['_id'] . '-icon_wrapper', 'id', $item['_id'] );
-			$this->parent->add_render_attribute( $item['_id'] . '-link-attributes', 'href', $item['item_link']['url'] );
-			if ( $item['item_link']['is_external'] === 'on' ) {
-				$this->parent->add_render_attribute( $item['_id'] . '-link-attributes', 'target', '_blank' );
-			}
-			if ( $item['item_link']['nofollow'] ) {
-				$this->parent->add_render_attribute( $item['_id'] . '-link-attributes', 'rel', 'nofollow' );
-			}
+
+			$this->parent->add_link_attributes($item['_id'] . '-icon_wrapper', $item['item_link']);
+			// $this->parent->add_render_attribute( $item['_id'] . '-link-attributes', 'href', $item['item_link']['url'] );
+			// if ( $item['item_link']['is_external'] === 'on' ) {
+			// 	$this->parent->add_render_attribute( $item['_id'] . '-link-attributes', 'target', '_blank' );
+			// }
+			// if ( $item['item_link']['nofollow'] ) {
+			// 	$this->parent->add_render_attribute( $item['_id'] . '-link-attributes', 'rel', 'nofollow' );
+			// }
 
 			?>
 
@@ -1430,7 +1430,6 @@ abstract class Skin_Base extends Elementor_Skin_Base {
 										Helper::validate_html_tag( $item['item_title_size'], [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ], 'h3' ),
 										$item['item_title_text']
 									);
-									//echo '<' . Helper::validate_html_tag( $item['item_title_size'], [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ], 'h3' ) . ' class="eae-tl-item-title">' .  . '</' . Helper::validate_html_tag( $item['item_title_size'], [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ], 'h3' ) . '>';
 									echo '<div class="eae-tl-content-innner">' . $item['item_content'] . '</div>';
 									?>
 								</div>

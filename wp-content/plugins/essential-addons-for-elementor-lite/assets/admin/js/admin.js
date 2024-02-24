@@ -37,6 +37,12 @@
 		$( "#eael-google-map-popup" ).show();
 	} )
 	
+	$( document ).on( 'click', '#eael-business-reviews-setting', function ( event ) {
+		event.preventDefault();
+		eaelPopupBox.show();
+		$( "#eael-business-reviews-popup" ).show();
+	} )
+	
 	$( document ).on( 'click', '#eael-mailchimp-setting', function ( event ) {
 		event.preventDefault();
 		eaelPopupBox.show();
@@ -55,12 +61,20 @@
 		$( "#eael-post-duplicator-popup" ).show();
 	} )
 	
+	// Save Button reacting on any changes
+	var saveButton = $( ".js-eael-settings-save" );
+	
 	$( document ).on( "click", ".eael-save-trigger", function ( event ) {
 		event.preventDefault();
 		saveButton
 		.addClass( "save-now" )
 		.removeAttr( "disabled" )
 		.css( "cursor", "pointer" );
+		
+		if( saveButton.hasClass( "save-now" ) && saveButton.length > 0 ){
+			$(saveButton[0]).trigger('click');
+		}
+
 	} )
 	
 	//close popup
@@ -69,9 +83,6 @@
 		eaelPopupBox.hide();
 		$( ".modal__content__popup" ).hide();
 	} )
-	
-	// Save Button reacting on any changes
-	var saveButton = $( ".js-eael-settings-save" );
 	
 	$( ".eael-widget-item:enabled" ).on( "click", function ( e ) {
 		totalElements();
@@ -114,7 +125,7 @@
 				        },
 				        beforeSend: function () {
 					        _this.html(
-						        '<i id="eael-spinner" class="ea-admin-icon icon-settings-loader"></i><span>Saving Data...</span>'
+						        '<i id="eael-spinner" class="ea-admin-icon eael-icon-settings-loader"></i><span>Saving Data...</span>'
 					        );
 				        },
 				        success: function ( response ) {
@@ -155,7 +166,7 @@
 			        },
 			        beforeSend: function () {
 				        _this.html(
-					        '<i id="eael-spinner" class="ea-admin-icon icon-settings-loader"></i><span>Generating...</span>'
+					        '<i id="eael-spinner" class="ea-admin-icon eael-icon-settings-loader"></i><span>Generating...</span>'
 				        );
 			        },
 			        success: function ( response ) {
@@ -482,6 +493,17 @@
 		}
 	});
 	
+	$(document).on('change', '#lr_custom_profile_fields', function (e) {
+		let $this = $(this),
+		    custom_profile_fields = $this.prop('checked');
+
+		if( custom_profile_fields ){
+			$(document).find('.lr_custom_profile_fields_child').removeClass('eael-d-none');
+		} else {
+			$(document).find('.lr_custom_profile_fields_child').addClass('eael-d-none');
+		}
+	});
+
 	$(document).on('click', '.eael-setup-wizard-save', function (e) {
 		e.preventDefault();
 		var $this = $(this);

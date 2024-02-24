@@ -8,7 +8,10 @@
 
 namespace Smush\App;
 
+use Smush\Core\Array_Utils;
+use Smush\Core\Resize\Resize_Optimization;
 use Smush\Core\Settings;
+use Smush\Core\Stats\Global_Stats;
 use WP_Smush;
 
 if ( ! defined( 'WPINC' ) ) {
@@ -24,6 +27,7 @@ abstract class Abstract_Summary_Page extends Abstract_Page {
 	 */
 	public function on_load() {
 		add_action( 'stats_ui_after_resize_savings', array( $this, 'conversion_savings_stats' ), 15 );
+		add_action( 'stats_ui_after_resize_savings', array( $this, 'add_lossy_level' ), 25 );
 		add_action( 'stats_ui_after_resize_savings', array( $this, 'cdn_stats_ui' ), 20 );
 		if ( Abstract_Page::should_render( 'directory' ) ) {
 			add_action( 'stats_ui_after_resize_savings', array( $this, 'directory_stats_ui' ), 10 );
@@ -43,7 +47,7 @@ abstract class Abstract_Summary_Page extends Abstract_Page {
 				null,
 				'main',
 				array(
-					'box_class'         => 'sui-box sui-summary sui-summary-smush ' . $this->get_whitelabel_class(),
+					'box_class'         => 'sui-box sui-summary sui-summary-smush-metabox sui-summary-smush ' . $this->get_whitelabel_class(),
 					'box_content_class' => false,
 				)
 			);
@@ -78,35 +82,23 @@ abstract class Abstract_Summary_Page extends Abstract_Page {
 	 * Summary meta box.
 	 */
 	public function dashboard_summary_meta_box() {
-		$core = WP_Smush::get_instance()->core();
-
-		$resize_count = $core->get_savings( 'resize', false, false, true );
-
-		// Split human size to get format and size.
-		$human = explode( ' ', $core->stats['human'] );
-
-		$resize_savings = 0;
-		// Get current resize savings.
-		if ( ! empty( $core->stats['resize_savings'] ) && $core->stats['resize_savings'] > 0 ) {
-			$resize_savings = size_format( $core->stats['resize_savings'], 1 );
-		}
-
-		list( $percent_optimized, $grade ) = $this->get_grade_data();
+		$array_utils  = new Array_Utils();
+		$core         = WP_Smush::get_instance()->core();
+		$global_stats = $core->get_global_stats();
 
 		$this->view(
 			'summary/meta-box',
 			array(
-				'human_format'      => empty( $human[1] ) ? 'B' : $human[1],
-				'human_size'        => empty( $human[0] ) ? '0' : round( (int) $human[0] ),
-				'remaining'         => $this->get_total_images_to_smush(),
-				'resize_count'      => ! $resize_count ? 0 : $resize_count,
+				'human_bytes'       => $array_utils->get_array_value( $global_stats, 'human_bytes' ),
+				'remaining'         => $array_utils->get_array_value( $global_stats, 'remaining_count' ),
+				'resize_count'      => $array_utils->get_array_value( $global_stats, 'count_resize' ),
 				'resize_enabled'    => (bool) $this->settings->get( 'resize' ),
-				'resize_savings'    => $resize_savings,
-				'stats_percent'     => $core->stats['percent'] > 0 ? number_format_i18n( $core->stats['percent'], 1 ) : 0,
-				'total_optimized'   => $core->stats['total_images'],
-				'percent_grade'     => $grade,
-				'percent_metric'    => 0.0 === (float) $percent_optimized ? 100 : $percent_optimized,
-				'percent_optimized' => $percent_optimized,
+				'resize_savings'    => $array_utils->get_array_value( $global_stats, 'savings_resize_human' ),
+				'stats_percent'     => $array_utils->get_array_value( $global_stats, 'savings_percent' ),
+				'total_optimized'   => $array_utils->get_array_value( $global_stats, 'count_images' ),
+				'percent_grade'     => $array_utils->get_array_value( $global_stats, 'percent_grade' ),
+				'percent_metric'    => $array_utils->get_array_value( $global_stats, 'percent_metric' ),
+				'percent_optimized' => $array_utils->get_array_value( $global_stats, 'percent_optimized' ),
 			)
 		);
 	}
@@ -120,47 +112,28 @@ abstract class Abstract_Summary_Page extends Abstract_Page {
 	 * @return void
 	 */
 	public function conversion_savings_stats() {
-		$core = WP_Smush::get_instance()->core();
-
-		if ( WP_Smush::is_pro() && ! empty( $core->stats['conversion_savings'] ) && $core->stats['conversion_savings'] > 0 ) {
-			?>
-			<li class="smush-conversion-savings">
-				<span class="sui-list-label">
-					<?php esc_html_e( 'PNG to JPEG savings', 'wp-smushit' ); ?>
-				</span>
-				<span class="sui-list-detail wp-smush-stats">
-					<?php echo $core->stats['conversion_savings'] > 0 ? esc_html( size_format( $core->stats['conversion_savings'], 1 ) ) : '0 MB'; ?>
-				</span>
-			</li>
-			<?php
-		}
-	}
-
-	/**
-	 * Calculates the total images to be smushed.
-	 * This is all unsmushed images + all images to re-smush.
-	 *
-	 * We're not using $core->remaining_count because it excludes the resmush count
-	 * when the amount of unsmushed images and amount of images to re-smush are the same.
-	 * So, if you have 2 images to re-smush and 2 unsmushed images, it'll return 2 and no 4.
-	 * We might need to check that there, it's used everywhere so we must be careful. Using this in the meantime.
-	 *
-	 * @since 3.7.2
-	 *
-	 * @return integer
-	 */
-	protected function get_total_images_to_smush() {
-		$images_to_resmush = count( get_option( 'wp-smush-resmush-list', array() ) );
-
-		// This is the same calculation used for $core->remaining_count,
-		// except that we don't add the re-smushed count here.
-		$unsmushed_count = WP_Smush::get_instance()->core()->total_count - WP_Smush::get_instance()->core()->smushed_count - WP_Smush::get_instance()->core()->skipped_count;
-		// Sometimes this number can be negative, if there are weird issues with metadata.
-		if ( $unsmushed_count > 0 ) {
-			return $images_to_resmush + $unsmushed_count;
+		if ( ! WP_Smush::is_pro() ) {
+			return;
 		}
 
-		return $images_to_resmush;
+		$core                     = WP_Smush::get_instance()->core();
+		$global_stats             = $core->get_global_stats();
+		$class_names              = array( 'smush-conversion-savings' );
+		$savings_conversion_human = ! empty( $global_stats['savings_conversion_human'] ) ? $global_stats['savings_conversion_human'] : '0 B';
+		if ( empty( $global_stats['savings_conversion'] ) ) {
+			$class_names[] = 'sui-hidden';
+		}
+
+		?>
+		<li class="<?php echo esc_attr( join( ' ', $class_names ) ); ?>">
+			<span class="sui-list-label">
+				<?php esc_html_e( 'PNG to JPEG savings', 'wp-smushit' ); ?>
+			</span>
+			<span class="sui-list-detail wp-smush-stats">
+				<?php echo esc_html( $savings_conversion_human ); ?>
+			</span>
+		</li>
+		<?php
 	}
 
 	/**
@@ -243,35 +216,7 @@ abstract class Abstract_Summary_Page extends Abstract_Page {
 		<?php
 	}
 
-	/**
-	 * Get grade data (percent optimized and class name) for the score widget in summary meta box.
-	 *
-	 * @since 3.10.0
-	 *
-	 * @return array
-	 */
-	protected function get_grade_data() {
-		$core = WP_Smush::get_instance()->core();
-
-		$total_images_to_smush = $this->get_total_images_to_smush();
-		$total_images          = $core->total_count - $core->skipped_count;
-
-		$percent_optimized = 0;
-		if ( 0 === $total_images ) {
-			$grade = 'sui-grade-dismissed';
-		} elseif ( $total_images === $total_images_to_smush ) {
-			$grade = 'sui-grade-f';
-		} else {
-			$percent_optimized = floor( ( $total_images - $total_images_to_smush ) * 100 / $total_images );
-
-			$grade = 'sui-grade-f';
-			if ( $percent_optimized >= 60 && $percent_optimized < 90 ) {
-				$grade = 'sui-grade-c';
-			} elseif ( $percent_optimized >= 90 ) {
-				$grade = 'sui-grade-a';
-			}
-		}
-
-		return array( $percent_optimized, $grade );
+	public function add_lossy_level() {
+		return $this->view( 'summary/lossy-level' );
 	}
 }

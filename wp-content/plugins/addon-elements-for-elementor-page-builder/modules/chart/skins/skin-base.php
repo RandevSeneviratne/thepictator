@@ -19,7 +19,7 @@ abstract class Skin_Base extends Elementor_Skin_Base {
 
 	public function common_render() {
 		$settings = $this->parent->get_settings_for_display();
-
+	
 		require_once EAE_PATH . 'modules/chart/classes/map-data.php';
 
 		$this->parent->add_render_attribute(
@@ -29,6 +29,8 @@ abstract class Skin_Base extends Elementor_Skin_Base {
 				'data-settings' => Map_Data::render_chart( $settings ),
 			]
 		);
+
+
 		$this->parent->add_render_attribute( 'wrapper', 'class', 'eae-chart-wrapper' );
 		$this->parent->add_render_attribute( 'chart-canvas', 'id', 'eae-chart-canvas' );
 

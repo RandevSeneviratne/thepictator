@@ -19,7 +19,6 @@ $wp_customize->add_section( 'gf_stla_form_id_text_fields' , array(
 
 );
 
-
 /*for pc */
  $wp_customize->add_setting( 'gf_stla_form_id_'.$current_form_id.'[text-fields][max-width]' , array(
       'default'     => '',

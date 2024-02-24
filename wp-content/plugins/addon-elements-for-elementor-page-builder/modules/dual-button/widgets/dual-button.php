@@ -23,11 +23,11 @@ class DualButton extends EAE_Widget_Base {
 	}
 
 	public function get_title() {
-		return __( 'EAE - Dual Button', 'wts-eae' );
+		return __( 'Dual Button', 'wts-eae' );
 	}
 
 	public function get_icon() {
-		return 'eae-icons eae-dual-button';
+		return 'eae-icon eae-dual-button';
 	}
 
 	public function get_categories() {
@@ -809,6 +809,7 @@ class DualButton extends EAE_Widget_Base {
 
 	protected function render() {
 		$settings = $this->get_settings_for_display();
+		
 		$this->add_render_attribute( 'button1', 'class', 'eae-button-1-wrapper' );
 		$this->add_render_attribute( 'main_wrapper', 'class', 'eae-dual-button-main-wrapper' );
 		if ( is_rtl() ) {
@@ -881,7 +882,7 @@ class DualButton extends EAE_Widget_Base {
 										Icons_Manager::render_icon( $settings['button1_icon_new'], [ 'aria-hidden' => 'true' ] );
 									else :
 										?>
-										<i class="<?php echo $settings['button1_icon']; ?>"></i>
+										<i class="<?php echo esc_attr($settings['button1_icon']); ?>"></i>
 									<?php endif; ?>
 								</div>
 							<?php } ?>
@@ -899,12 +900,12 @@ class DualButton extends EAE_Widget_Base {
 											Icons_Manager::render_icon( $settings['separator_icon_new'], [ 'aria-hidden' => 'true' ] );
 										else :
 											?>
-											<i class="<?php echo $settings['separator_icon']; ?>"></i>
+											<i class="<?php echo esc_attr($settings['separator_icon']); ?>"></i>
 											<?php
 									endif;
 									}
 									if ( $settings['separator_text'] !== '' ) {
-										echo $settings['separator_text'];
+										echo esc_html($settings['separator_text']);
 									}
 									?>
 								</span>
@@ -923,7 +924,7 @@ class DualButton extends EAE_Widget_Base {
 											Icons_Manager::render_icon( $settings['separator_icon_new'], [ 'aria-hidden' => 'true' ] );
 										else :
 											?>
-											<i class="<?php echo $settings['separator_icon']; ?>"></i>
+											<i class="<?php echo esc_attr($settings['separator_icon']); ?>"></i>
 											<?php
 									endif;
 									}

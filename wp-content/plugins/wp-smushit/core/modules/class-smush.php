@@ -11,6 +11,13 @@ use Smush\Core\Api\Backoff;
 use Smush\Core\Api\Request_Multiple;
 use Smush\Core\Core;
 use Smush\Core\Helper;
+use Smush\Core\Error_Handler;
+use Smush\Core\Media\Media_Item_Cache;
+use Smush\Core\Media\Media_Item_Optimizer;
+use Smush\Core\Smush\Smusher;
+use Smush\Core\Smush\Smush_Optimization;
+use Smush\Core\Webp\Webp_Converter;
+use Smush\Core\Webp\Webp_Optimization;
 use WP_Error;
 use WP_Smush;
 
@@ -68,20 +75,20 @@ class Smush extends Abstract_Module {
 	 */
 	public function init() {
 		// Update the Super Smush count, after the Smush'ing.
-		add_action( 'wp_smush_image_optimised', array( $this, 'update_lists' ), '', 2 );
+		//add_action( 'wp_smush_image_optimised', array( $this, 'update_lists' ), '', 2 );
 
 		// Smush image (Auto Smush) when `wp_generate_attachment_metadata` filter is fired.
 		add_filter( 'wp_generate_attachment_metadata', array( $this, 'smush_image' ), 15, 2 );
 
 		// Delete backup files.
-		add_action( 'delete_attachment', array( $this, 'delete_images' ), 12 );
+		//add_action( 'delete_attachment', array( $this, 'delete_images' ), 12 );
 
 		// Handle the Async optimisation.
 		add_action( 'wp_async_wp_generate_attachment_metadata', array( $this, 'wp_smush_handle_async' ) );
 		add_action( 'wp_async_wp_save_image_editor_file', array( $this, 'wp_smush_handle_editor_async' ), '', 2 );
 
 		// Make sure we treat scaled images as additional size.
-		add_filter( 'wp_smush_add_scaled_images_to_meta', array( $this, 'add_scaled_to_meta' ), 10, 2 );
+		//add_filter( 'wp_smush_add_scaled_images_to_meta', array( $this, 'add_scaled_to_meta' ), 10, 2 );
 
 		// Fix SSL CA certificates issue.
 		add_action( 'wp_smush_before_smush_file', array( $this, 'fix_ssl_ca_certificate_error' ) );
@@ -264,30 +271,36 @@ class Smush extends Abstract_Module {
 
 		// Check if file exists and the directory is writable.
 		if ( empty( $file_path ) ) {
-			$errors->add( 'empty_path', __( 'File path is empty', 'wp-smushit' ) );
+			$errors->add( 'empty_path', Error_Handler::get_error_message( 'empty_path' ) );
 		} elseif ( ! file_exists( $file_path ) || ! is_file( $file_path ) ) {
 			// Check that the file exists.
 			/* translators: %s: file path */
-			$errors->add( 'file_not_found', sprintf( __( 'Could not find %s', 'wp-smushit' ), $file_path ) );
+			$errors->add( 'file_not_found', sprintf( Error_Handler::get_error_message( 'file_not_found' ), basename( $file_path ) ) );
 		} elseif ( ! is_writable( $dir_name ) ) {
 			// Check that the file is writable.
 			/* translators: %s: directory name */
-			$errors->add( 'not_writable', sprintf( __( '%s is not writable', 'wp-smushit' ), $dir_name ) );
+			$errors->add( 'not_writable', sprintf( Error_Handler::get_error_message( 'not_writable' ), $dir_name ) );
 		}
 
 		$file_size = file_exists( $file_path ) ? filesize( $file_path ) : '';
 
 		// Check if premium user.
-		$max_size = WP_Smush::is_pro() ? WP_SMUSH_PREMIUM_MAX_BYTES : WP_SMUSH_MAX_BYTES;
+		if ( WP_Smush::is_pro() ) {
+			$max_size        = WP_SMUSH_PREMIUM_MAX_BYTES;
+			$size_limit_code = 'size_pro_limit';
+		} else {
+			$size_limit_code = 'size_limit';
+			$max_size        = WP_SMUSH_MAX_BYTES;
+		}
 
 		// Check if file exists.
 		if ( 0 === (int) $file_size ) {
-			/* translators: %1$s: image size, %2$s: image name */
-			$errors->add( 'image_not_found', sprintf( __( 'Skipped (%1$s), image not found', 'wp-smushit' ), size_format( $file_size, 1 ) ) );
+			$errors->add( 'file_not_found', sprintf( Error_Handler::get_error_message( 'file_not_found' ), basename( $file_path ) ) );
 		} elseif ( $file_size > $max_size ) {
 			// Check size limit.
-			/* translators: %1$s: image size, %2$s: image name */
-			$errors->add( 'size_limit', sprintf( __( 'Skipped (%1$s), size limit exceeded', 'wp-smushit' ), size_format( $file_size, 1 ) ) );
+			$errors->add( $size_limit_code, sprintf( Error_Handler::get_error_message( $size_limit_code ), size_format( $file_size, 1 ) ), array(
+				'file_name' => basename( $file_path )
+			) );
 		}
 
 		return $errors;
@@ -378,6 +391,9 @@ class Smush extends Abstract_Module {
 	 * @return array|bool|WP_Error
 	 */
 	public function do_smushit( $file_path = '', $convert_to_webp = false, $retries = 0 ) {
+		// TODO: (stats refactor) handle properly
+		return $this->do_smushit_optimization( $file_path, $convert_to_webp, $retries );
+
 		$errors = $this->validate_file( $file_path );
 		if ( count( $errors->get_error_messages() ) ) {
 			Helper::logger()->error(
@@ -464,7 +480,7 @@ class Smush extends Abstract_Module {
 
 		// Check for API message and store in db.
 		if ( ! empty( $data->api_message ) ) {
-			$this->add_api_message( $data->api_message );
+			$this->add_api_message( (array) $data->api_message );
 		}
 
 		// If is_premium is set in response, send it over to check for member validity.
@@ -520,6 +536,7 @@ class Smush extends Abstract_Module {
 			} else {
 				return new WP_Error(
 					'error_posting_to_api',
+					/* translators: %s: Error message. */
 					sprintf( __( 'Error posting to API: %s', 'wp-smushit' ), $error )
 				);
 			}
@@ -527,6 +544,7 @@ class Smush extends Abstract_Module {
 
 		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			$error = sprintf(
+				/* translators: 1: Error code, 2: Error message */
 				__( 'Error posting to API: %1$s %2$s', 'wp-smushit' ),
 				wp_remote_retrieve_response_code( $response ),
 				wp_remote_retrieve_response_message( $response )
@@ -909,6 +927,18 @@ class Smush extends Abstract_Module {
 	 * @return mixed Returns response data, TRUE if smushed the file, or FALSE with error(s).
 	 */
 	public function smushit( $attachment_id, &$ref_meta, &$ref_errors ) {
+		// TODO: (stats refactor) handle properly
+		$meta = $this->run_optimizer( $attachment_id );
+		if ( is_wp_error( $meta ) ) {
+			$ref_errors = $meta;
+
+			return false;
+		} else {
+			$ref_meta = $meta;
+
+			return true;
+		}
+
 		/**
 		 * Prevent infinite loop when someone calls `wp_generate_attachment_metadata` inside smushit.
 		 *
@@ -926,8 +956,7 @@ class Smush extends Abstract_Module {
 
 		$attachment_id = (int) $attachment_id;
 		if ( $attachment_id < 1 ) {
-			$message = __( 'No attachment ID was received.', 'wp-smushit' );
-			$ref_errors->add( 'missing_id', $message, array( 'file_name' => 'undefined' ) );
+			$ref_errors->add( 'missing_id', Error_Handler::get_error_message( 'missing_id' ), array( 'file_name' => 'undefined' ) );
 			return $this->no_smushit( $attachment_id, $ref_errors );
 		}
 
@@ -939,22 +968,14 @@ class Smush extends Abstract_Module {
 		// Check if the file is ignored or animated.
 		$is_ignored = (int) get_post_meta( $attachment_id, 'wp-smush-ignore-bulk', true );
 		if ( $is_ignored > 0 ) {
-			$type    = 'ignored';
-			$message = __( 'Skip ignored file.', 'wp-smushit' );
-
-			if ( Core::STATUS_ANIMATED === $is_ignored ) {
-				$type    = 'animated';
-				$message = __( 'Skip animated file.', 'wp-smushit' );
-			}
-
-			$ref_errors->add( $type, $message, array( 'file_name' => $file_name ) );
+			$type = Core::STATUS_ANIMATED === $is_ignored ? 'animated' : 'ignored';
+			$ref_errors->add( $type, Error_Handler::get_error_message( $type ), array( 'file_name' => $file_name ) );
 			return $this->no_smushit( $attachment_id, $ref_errors );
 		}
 
 		// Return the status if the file is in progress.
 		if ( get_transient( 'wp-smush-restore-' . $attachment_id ) || get_transient( 'smush-in-progress-' . $attachment_id ) ) {
-			$message = __( 'File processing is in progress.', 'wp-smushit' );
-			$ref_errors->add( 'in_progress', $message, array( 'file_name' => $file_name ) );
+			$ref_errors->add( 'in_progress', Error_Handler::get_error_message( 'in_progress' ), array( 'file_name' => $file_name ) );
 			return $this->no_smushit( $attachment_id, $ref_errors );
 		}
 
@@ -968,8 +989,7 @@ class Smush extends Abstract_Module {
 		 * Causes PHP Warning: Illegal string offset 'file' message.
 		 */
 		if ( ! is_array( $ref_meta ) || ! isset( $ref_meta['file'] ) ) {
-			$message = __( 'No file data found in image meta', 'wp-smushit' );
-			$ref_errors->add( 'no_file_meta', $message, array( 'file_name' => $file_name ) );
+			$ref_errors->add( 'no_file_meta', Error_Handler::get_error_message( 'no_file_meta' ), array( 'file_name' => $file_name ) );
 			return $this->no_smushit( $attachment_id, $ref_errors );
 		}
 
@@ -987,8 +1007,7 @@ class Smush extends Abstract_Module {
 		 * @param int  $ID    Attachment Id, Attachment id of the image being processed.
 		 */
 		if ( ! apply_filters( 'wp_smush_image', true, $attachment_id ) ) {
-			$message = esc_html__( 'Skipped with wp_smush_image filter', 'wp-smushit' );
-			$ref_errors->add( 'skipped', $message, array( 'file_name' => $file_name ) );
+			$ref_errors->add( 'skipped_filter', Error_Handler::get_error_message( 'skipped_filter' ), array( 'file_name' => $file_name ) );
 			return $this->no_smushit( $attachment_id, $ref_errors );
 		}
 
@@ -997,15 +1016,21 @@ class Smush extends Abstract_Module {
 
 		// If the file doesn't exist, return.
 		if ( ! file_exists( $file_path ) ) {
-			$message = esc_html__( 'Image not found.', 'wp-smushit' );
-			$ref_errors->add( 'not_found', $message, array( 'file_name' => $file_name ) );
+			$ref_errors->add( 'file_not_found', sprintf( Error_Handler::get_error_message( 'file_not_found' ), basename( $file_path ) ), array( 'file_name' => $file_name ) );
 			return $this->no_smushit( $attachment_id, $ref_errors );
 		}
 
 		// Check if file is animated, return.
 		if ( Helper::check_animated_status( $file_path, $attachment_id ) ) {
-			$message = esc_html__( 'Skip animated file.', 'wp-smushit' );
-			$ref_errors->add( 'animated', $message, array( 'file_name' => $file_name ) );
+			$ref_errors->add( 'animated', Error_Handler::get_error_message( 'animated' ), array( 'file_name' => $file_name ) );
+			return $this->no_smushit( $attachment_id, $ref_errors );
+		}
+
+		// Check file size limit.
+		$size_exceeded = Helper::size_limit_exceeded( $attachment_id );
+		if ( $size_exceeded ) {
+			$error_code = WP_Smush::is_pro() ? 'size_pro_limit' : 'size_limit';
+			$ref_errors->add( $error_code, sprintf( Error_Handler::get_error_message( $error_code ), size_format( $size_exceeded ) ), array( 'file_name' => $file_name ) );
 			return $this->no_smushit( $attachment_id, $ref_errors );
 		}
 
@@ -1034,7 +1059,7 @@ class Smush extends Abstract_Module {
 			$generating_metadata = doing_filter( 'wp_generate_attachment_metadata' );
 
 			// Nothing to smush if that is generating metadata while disabling auto-smush.
-			if ( $generating_metadata && ! $this->is_auto_smush_enabled() ) {
+			if ( $generating_metadata && ! $this->should_auto_smush( $attachment_id ) ) {
 				// Remove stats and update cache.
 				WP_Smush::get_instance()->core()->remove_stats( $attachment_id );
 			} else {
@@ -1130,6 +1155,16 @@ class Smush extends Abstract_Module {
 			return $meta;
 		}
 
+		// Is doing wp_generate_attachment_metadata.
+		$generating_metadata = doing_filter( 'wp_generate_attachment_metadata' );
+		if ( $generating_metadata && ! $this->should_auto_smush( $id ) ) {
+			// TODO: the following commented out line is here for historic reference only in case we need it again but hopefully we won't. Remove it once the version 3.13 has been out for a while. The reason why we are removing it is that it causes the test test__global_stats_updated_on_restore to fail.
+			// Remove stats and update cache.
+			//WP_Smush::get_instance()->core()->remove_stats( $id );
+
+			return $meta;
+		}
+
 		/**
 		 * Smush image.
 		 *
@@ -1191,7 +1226,8 @@ class Smush extends Abstract_Module {
 
 			$status = array(
 				'error'        => $error_code,
-				'error_msg'    => '<p class="wp-smush-error-message">' . Helper::filter_error( $errors->get_error_message( $error_code ), $attachment_id ) . '</p>',
+				'error_msg'    => Helper::filter_error( $errors->get_error_message( $error_code ), $attachment_id ),
+				'html_stats'   => WP_Smush::get_instance()->library()->generate_markup( $attachment_id ),
 				'show_warning' => (int) $this->show_warning(),
 			);
 
@@ -1204,11 +1240,12 @@ class Smush extends Abstract_Module {
 			wp_send_json_error( $status );
 		}
 
-		// Get the button status.
-		$status = WP_Smush::get_instance()->library()->generate_markup( $attachment_id );
-
 		$this->update_resmush_list( $attachment_id );
 		Core::add_to_smushed_list( $attachment_id );
+
+		// Get the button status later after update resmushed list.
+		$status = WP_Smush::get_instance()->library()->generate_markup( $attachment_id );
+
 		if ( $return ) {
 			return $status;
 		}
@@ -1270,7 +1307,7 @@ class Smush extends Abstract_Module {
 		 *
 		 * @since 3.8.0
 		 */
-		WP_Smush::get_instance()->core()->mod->webp->delete_images( $image_id, false );
+		//WP_Smush::get_instance()->core()->mod->webp->delete_images( $image_id, false );
 	}
 
 	/**
@@ -1317,7 +1354,7 @@ class Smush extends Abstract_Module {
 	 */
 	public function wp_smush_handle_async( $id ) {
 		// If we don't have image id or auto Smush is disabled, return.
-		if ( empty( $id ) || ! $this->is_auto_smush_enabled() ) {
+		if ( empty( $id ) || ! $this->should_auto_smush( $id ) ) {
 			return;
 		}
 
@@ -1338,7 +1375,7 @@ class Smush extends Abstract_Module {
 		}
 
 		// If auto Smush is disabled.
-		if ( ! $this->is_auto_smush_enabled() ) {
+		if ( ! $this->should_auto_smush( $id ) ) {
 			return;
 		}
 
@@ -1478,6 +1515,13 @@ class Smush extends Abstract_Module {
 	}
 
 	private function save_smushed_image_file( $file_path, $convert_to_webp, $image ) {
+		$pre = apply_filters( 'wp_smush_pre_image_write', false, $file_path, $convert_to_webp, $image );
+		if ( $pre !== false ) {
+			Helper::logger()->notice( 'Another plugin/theme short circuited the image write operation using the wp_smush_pre_image_write filter.' );
+
+			return;
+		}
+
 		// Backup the old permissions
 		$permissions = $this->get_file_permissions( $file_path );
 
@@ -1552,5 +1596,63 @@ class Smush extends Abstract_Module {
 	 */
 	public function set_request_multiple( $request_multiple ) {
 		$this->request_multiple = $request_multiple;
+	}
+
+	private function do_smushit_optimization( $file_path, $convert_to_webp, $retries ) {
+		$errors = $this->validate_file( $file_path );
+		if ( count( $errors->get_error_messages() ) ) {
+			return $errors;
+		}
+
+		$smusher = $convert_to_webp
+			? new Webp_Converter()
+			: new Smusher();
+		$smusher->set_retry_attempts( $retries );
+		$data = $smusher->smush_file( $file_path );
+		if ( $data ) {
+			return array(
+				'success' => true,
+				'data'    => $data,
+			);
+		} else {
+			return $smusher->get_errors();
+		}
+	}
+
+	private function run_optimizer( $attachment_id ) {
+		$in_progress_error = new WP_Error( 'in_progress', 'Smush already in progress' );
+		if ( $this->prevent_infinite_loop ) {
+			return $this->no_smushit( $attachment_id, $in_progress_error, $in_progress_error );
+		}
+		$this->prevent_infinite_loop = true;
+
+		$media_item = Media_Item_Cache::get_instance()->get( $attachment_id );
+		$optimizer  = new Media_Item_Optimizer( $media_item );
+		$optimized  = $optimizer->optimize();
+
+		$this->prevent_infinite_loop = false;
+
+		if ( $optimized ) {
+			return $media_item->get_wp_metadata();
+		} else {
+			if ( $media_item->has_errors() ) {
+				return $media_item->get_errors();
+			}
+			return $optimizer->get_errors();
+		}
+	}
+
+	public function should_auto_smush( $id ) {
+		$media_item = Media_Item_Cache::get_instance()->get( $id );
+		if ( ! $media_item->is_valid() ) {
+			return false;
+		}
+
+		if ( $media_item->is_large() ) {
+			// We don't want very large files to be auto smushed
+			return false;
+		}
+
+		return $this->is_auto_smush_enabled();
 	}
 }

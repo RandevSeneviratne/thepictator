@@ -34,139 +34,139 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-gear-alt:before {
+.eael-icon-gear-alt:before {
     content: "\e906";
 }
 
-.icon-tools:before {
+.eael-icon-tools:before {
     content: "\e911";
 }
 
-.icon-element:before {
+.eael-icon-element:before {
     content: "\e904";
 }
 
-.icon-extension:before {
+.eael-icon-extension:before {
     content: "\e905";
 }
 
-.icon-lock-alt:before {
+.eael-icon-lock-alt:before {
     content: "\e908";
 }
 
-.icon-plug:before {
+.eael-icon-plug:before {
     content: "\e90c";
 }
 
-.icon-edit:before {
+.eael-icon-edit:before {
     content: "\e903";
 }
 
-.icon-play-alt:before {
+.eael-icon-play-alt:before {
     content: "\e90b";
 }
 
-.icon-star:before {
+.eael-icon-star:before {
     content: "\e90e";
 }
 
-.icon-support:before {
+.eael-icon-support:before {
     content: "\e90f";
 }
 
-.icon-monitor:before {
+.eael-icon-monitor:before {
     content: "\e90a";
 }
 
-.icon-calendar:before {
+.eael-icon-calendar:before {
     content: "\e912";
 }
 
-.icon-course:before {
+.eael-icon-course:before {
     content: "\e913";
 }
 
-.icon-form:before {
+.eael-icon-form:before {
     content: "\e914";
 }
 
-.icon-gallery:before {
+.eael-icon-gallery:before {
     content: "\e915";
 }
 
-.icon-image-hotspot:before {
+.eael-icon-image-hotspot:before {
     content: "\e916";
 }
 
-.icon-instagram:before {
+.eael-icon-instagram:before {
     content: "\e917";
 }
 
-.icon-marker:before {
+.eael-icon-marker:before {
     content: "\e918";
 }
 
-.icon-modal:before {
+.eael-icon-modal:before {
     content: "\e919";
 }
 
-.icon-parallax:before {
+.eael-icon-parallax:before {
     content: "\e91a";
 }
 
-.icon-particel:before {
+.eael-icon-particel:before {
     content: "\e91b";
 }
 
-.icon-toggle:before {
+.eael-icon-toggle:before {
     content: "\e91c";
 }
 
-.icon-tooltip:before {
+.eael-icon-tooltip:before {
     content: "\e91d";
 }
 
-.icon-angle-down:before {
+.eael-icon-angle-down:before {
     content: "\e900";
 }
 
-.icon-angle-right:before {
+.eael-icon-angle-right:before {
     content: "\e901";
 }
 
-.icon-doc:before {
+.eael-icon-doc:before {
     content: "\e902";
 }
 
-.icon-times:before {
+.eael-icon-times:before {
     content: "\e910";
 }
 
-.icon-gear:before {
+.eael-icon-gear:before {
     content: "\e907";
 }
 
-.icon-long-arrow-right:before {
+.eael-icon-long-arrow-right:before {
     content: "\e909";
 }
-.icon-community:before {
+.eael-icon-community:before {
     content: "\e91e";
 }
-.icon-contribute:before {
+.eael-icon-contribute:before {
     content: "\e91f";
 }
 
-.icon-settings-loader:before {
+.eael-icon-settings-loader:before {
     content: "\e920";
 }
 
-.icon-settings-loader:before {
+.eael-icon-settings-loader:before {
     content: "\e920";
 }
-.icon-style-lock:before {
+.eael-icon-style-lock:before {
     content: "\e92a";
 }
-.icon-lock:before {
+.eael-icon-lock:before {
     content: "\e92a";
 }
 /* Start Setup Wizard */
@@ -3952,6 +3952,40 @@ button.button__greyBg:hover:disabled {
     position: relative;
 }
 
+.eael-d-block {
+    display: block !important;
+}
+
+.eael-element__wrap-popup {
+    padding: 0 20px 0 10px;
+}
+
+.eael-element__wrap-popup .login-register-info-icon {
+	font-size: 16px;
+	margin-top: 5px;
+}
+
+.eael-element__wrap-popup .eael-element__item .element__content .element__options .element__icon .tooltip-text::before {
+    left: 5%;
+}
+
+.eael-element__wrap.eael-element__wrap-popup .eael-element__item .element__content .element__options .element__icon .tooltip-text {
+    width: 390px;
+    max-width: 390px;
+    transform: translateX(-330px);
+    bottom: 150%;
+    margin-bottom: -5px;
+}
+
+.eael-element__wrap.eael-element__wrap-popup .eael-element__item {
+    box-shadow: none;
+    padding-bottom: 0;
+}
+
+.eael-element__wrap.eael-element__wrap-popup .eael-element__item .element__content .element__options .element__icon .tooltip-text::before {
+    left: 85%;
+}
+
 @media (max-width: 1599.98px) {
     .eael-element__wrap {
         -ms-grid-columns: (1fr) [ 4 ];
@@ -4859,6 +4893,10 @@ button.button__greyBg:hover:disabled {
     color: #9FAECB;
 }
 
+.eael-pb-0 {
+    padding-bottom: 0 !important;
+}
+
 .eael-modal__wrap .eael-modal__dialogue .eael-modal .modal__content {
     padding: 30px;
 }
@@ -4910,7 +4948,8 @@ button.button__greyBg:hover:disabled {
     text-decoration: underline;
 }
 
-.eael-login__setup .login__setup__header {
+.eael-login__setup .login__setup__header,
+.eael-business_reviews__setup .business_reviews__setup__header {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -4920,15 +4959,18 @@ button.button__greyBg:hover:disabled {
     margin-bottom: 20px;
 }
 
-.eael-login__setup .login__setup__header img {
+.eael-login__setup .login__setup__header img,
+.eael-business_reviews__setup .business_reviews__setup__header img {
     margin-right: 14px;
 }
 
 @media all and (max-width: 575px) {
-    .eael-login__setup .eael-input__inline {
+    .eael-login__setup .eael-input__inline,
+    .eael-business_reviews__setup .eael-input__inline {
         display: block;
     }
-    .eael-login__setup .eael-input__inline label {
+    .eael-login__setup .eael-input__inline label,
+    .eael-business_reviews__setup .eael-input__inline label {
         margin-bottom: 5px;
         display: inline-block;
     }
@@ -5193,6 +5235,7 @@ button.button__greyBg:hover:disabled {
     background: #5E2EFF;
     color: white;
     padding: 15px 10px;
+    position: relative;
 }
 
 .eael-admin-promotion-message p {
@@ -5257,4 +5300,9 @@ button.button__greyBg:hover:disabled {
     content: "Popular";
     background: #0064FF;
 }
-
+.eael-d-none {
+    display: none !important;
+}
+.eael-d-block {
+    display: block !important;
+}
